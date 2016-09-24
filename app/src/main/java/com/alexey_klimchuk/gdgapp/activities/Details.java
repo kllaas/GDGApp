@@ -1,0 +1,178 @@
+package com.alexey_klimchuk.gdgapp.activities;
+
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
+import com.alexey_klimchuk.gdgapp.helpers.DateToStringConverter;
+import com.alexey_klimchuk.gdgapp.models.Note;
+
+import java.io.File;
+
+public class Details extends AppCompatActivity {
+
+    private static final String TAG = "mDetails";
+    private SQLiteDatabase sqLiteDatabase;
+    private DatabaseHelper databaseHelper;
+    private TextView remindName;
+    private TextView remindContent;
+    private TextView remindDate;
+    private ImageView imageView;
+    private View moodState;
+    private Note mNote;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_details);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
+
+        // Initialize views
+        remindName = (TextView) findViewById(R.id.text_view_name_details);
+        remindContent = (TextView) findViewById(R.id.text_view_content_details);
+        remindDate = (TextView) findViewById(R.id.text_view_date_details);
+        imageView = (ImageView) findViewById(R.id.image_view_details);
+        moodState = findViewById(R.id.mood_icon);
+
+        // Initialize db
+        databaseHelper = new DatabaseHelper(this, "mydatabase.db", null, 1);
+        sqLiteDatabase = databaseHelper.getWritableDatabase();
+
+        // Set content from note object to views
+        fillViews();
+
+        FloatingActionButton fabEdit = (FloatingActionButton) findViewById(R.id.fab);
+        fabEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editNote();
+            }
+        });
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    /**
+     * Start Activity to edit note.
+     * Put in extras id of current note.
+     */
+    private void editNote() {
+        Intent intent = new Intent(Details.this, CreateNote.class);
+        intent.putExtra("id", mNote.getId());
+        startActivity(intent);
+    }
+
+    /**
+     * Set data from note object to views.
+     */
+    private void fillViews() {
+        Bundle extras = getIntent().getExtras();// Get id of Note from MainActivity
+        mNote = databaseHelper.getNoteById(sqLiteDatabase, extras.getString("id"));// Get note from db
+
+        remindName.setText(mNote.getName());
+        remindContent.setText(mNote.getContent());
+        remindDate.setText(DateToStringConverter.convertDateToString(mNote.getDate()));
+
+        GradientDrawable gd = new GradientDrawable();// Set mood
+        if (mNote.getMood() == Note.Mood.GOOD)
+            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorPrimary));
+        if (mNote.getMood() == Note.Mood.NORMAL)
+            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorNormal));
+        if (mNote.getMood() == Note.Mood.BAD)
+            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorBad));
+        gd.setShape(GradientDrawable.OVAL);
+        moodState.setBackground(gd);
+
+        if (mNote.getImage() != null) {
+            try {
+                File imgFile = new File(mNote.getImage());
+                if (imgFile.exists()) {
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    imageView.setImageBitmap(myBitmap);
+                }
+            } catch (Exception e) {
+                String error = "error image loading: " + e.getMessage();
+                Toast.makeText(Details.this, error, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_details, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_delete) {
+            createDialog();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Create dialog to delete note.
+     */
+    private void createDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialogStyle);
+        builder.setTitle("Delete note");
+        builder.setMessage("Are you sure?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                databaseHelper.deleteNote(sqLiteDatabase, mNote.getId());
+                if (mNote.getImage() != null) { // If note has imageView
+                    deleteImageFile();
+                }
+                // Go to MainActivity after deleting
+                Intent intent = new Intent(Details.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    /**
+     * Delete imageView file.
+     */
+    private void deleteImageFile() {
+        File imgFile = new File(mNote.getImage());
+        if (imgFile.exists()) {
+            if (imgFile.delete()) {
+                Log.d(TAG, "file was deleted");
+            } else {
+                Log.d(TAG, "file was not deleted");
+            }
+        }
+    }
+}

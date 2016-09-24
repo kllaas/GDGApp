@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "811478536704",
+    "firebase_url": "https://gdgapp-2d5ae.firebaseio.com",
+    "project_id": "gdgapp-2d5ae",
+    "storage_bucket": "gdgapp-2d5ae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:811478536704:android:49c8884c82d4ed8c",
+        "android_client_info": {
+          "package_name": "com.alexey_klimchuk.gdgapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "811478536704-isbumi5llhf70un2agjlca93okq1ghf0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA19jA7ANUQyFvcET1zm9pwJ0yOqFwApks"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

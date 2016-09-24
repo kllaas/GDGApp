@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/small_margin">
+
+    <View
+        android:id="@+id/mood_icon"
+        style="@drawable/mood_state"
+        android:layout_width="@dimen/detail_mood_size"
+        android:layout_height="@dimen/detail_mood_size"
+        android:background="@drawable/mood_state" />
+
+    <TextView
+        android:id="@+id/mood_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/small_margin"
+        android:textSize="18sp" />
+</LinearLayout>
