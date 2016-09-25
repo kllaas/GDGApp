@@ -55,6 +55,7 @@ public class RegistrationActivity extends AppCompatActivity implements Registrat
     @Override
     public void showProgressDialog() {
         mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCancelable(false);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         mProgressDialog.setMessage(getString(R.string.message_loading));
         mProgressDialog.show();

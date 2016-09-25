@@ -1,6 +1,5 @@
 package com.alexey_klimchuk.gdgapp.models;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -9,12 +8,20 @@ import java.util.UUID;
  */
 public class Note {
 
-    private String id;
-    private String name;
-    private String content;
-    private Date date;
-    private String image;
+    private String id = "";
+    private String name = "";
+    private String content = "";
+    private String date;
+    private String image = "";
     private Mood mMood;
+
+    public Note(String name, String content, String date, Mood mMood) {
+        this.id = UUID.randomUUID().toString();// Create uncial id.
+        this.name = name;
+        this.content = content;
+        this.date = date;
+        this.mMood = mMood;
+    }
 
     /**
      * Mood states
@@ -28,7 +35,7 @@ public class Note {
     public Note() {
     }
 
-    public Note(String name, String content, Date date, String image, Mood mood) {
+    public Note(String name, String content, String date, String image, Mood mood) {
         this.id = UUID.randomUUID().toString();// Create uncial id.
         this.name = name;
         this.content = content;
@@ -69,11 +76,11 @@ public class Note {
         this.content = content;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

@@ -53,18 +53,9 @@ public class LoginActivity extends AppCompatActivity implements LoginRelations.V
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
     public void showProgressDialog() {
         mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCancelable(false);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         mProgressDialog.setMessage(getString(R.string.message_loading));
         mProgressDialog.show();

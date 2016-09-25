@@ -21,8 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
-import com.alexey_klimchuk.gdgapp.helpers.DateToStringConverter;
 import com.alexey_klimchuk.gdgapp.models.Note;
 
 import java.io.File;
@@ -76,7 +76,7 @@ public class Details extends AppCompatActivity {
      * Put in extras id of current note.
      */
     private void editNote() {
-        Intent intent = new Intent(Details.this, CreateNote.class);
+        Intent intent = new Intent(Details.this, CreateNoteActivity.class);
         intent.putExtra("id", mNote.getId());
         startActivity(intent);
     }
@@ -90,7 +90,7 @@ public class Details extends AppCompatActivity {
 
         remindName.setText(mNote.getName());
         remindContent.setText(mNote.getContent());
-        remindDate.setText(DateToStringConverter.convertDateToString(mNote.getDate()));
+        remindDate.setText(mNote.getDate());
 
         GradientDrawable gd = new GradientDrawable();// Set mood
         if (mNote.getMood() == Note.Mood.GOOD)

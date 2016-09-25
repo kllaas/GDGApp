@@ -1,5 +1,7 @@
-package com.alexey_klimchuk.gdgapp.activities;
+package com.alexey_klimchuk.gdgapp.create_note;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -21,20 +22,23 @@ import android.widget.Toast;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
+import com.alexey_klimchuk.gdgapp.helpers.DateUtils;
 import com.alexey_klimchuk.gdgapp.models.Note;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * This activity work in two modes: creating and updating
  * At creating create note in db.
  * At updating - update it.
  */
-public class CreateNote extends AppCompatActivity {
+public class CreateNoteActivity extends AppCompatActivity implements CreateNoteRelations.View {
 
     private static final int PICK_IMAGE_REQUEST = 1;
     private Spinner spinner;
@@ -47,12 +51,18 @@ public class CreateNote extends AppCompatActivity {
     private Note updatingNote = null;
     private Bitmap currentBitmap;
 
+    private CreateNotePresenter presenter;
+    private ProgressDialog mProgressDialog;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+        ButterKnife.bind(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
+
+        presenter = new CreateNotePresenter(this);
 
         initializeVariables();
 
@@ -84,7 +94,7 @@ public class CreateNote extends AppCompatActivity {
         spinner = (Spinner) findViewById(R.id.spinner);
         // Create an ArrayAdapter using the string array and a custom spinner layout
         spinnerValues = getResources().getStringArray(R.array.mood_variants);
-        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(CreateNote.this, R.layout.mood_item, spinnerValues);
+        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(CreateNoteActivity.this, R.layout.mood_item, spinnerValues);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);// Apply the adapter to the spinner
@@ -125,16 +135,16 @@ public class CreateNote extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri selectedImageUri = data.getData();
             try {
-                currentBitmap = resizeImage(CreateNote.this, selectedImageUri);
+                currentBitmap = resizeImage(CreateNoteActivity.this, selectedImageUri);
                 ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
-
+                imageView.setDrawingCacheEnabled(false); // clear drawing cache
                 if (imageView != null) {
                     imageView.setImageBitmap(currentBitmap);
                 } else {
-                    Toast.makeText(CreateNote.this, "Something is wrong", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CreateNoteActivity.this, "Something is wrong", Toast.LENGTH_SHORT).show();
                 }
             } catch (IOException e) {
-                Toast.makeText(CreateNote.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CreateNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -144,55 +154,11 @@ public class CreateNote extends AppCompatActivity {
      * In create mode: if image was not picked set null to Note.image.
      * In update mode: if image was not picked set image from updatingNote to Note.image
      */
+    @OnClick(R.id.button_create)
     public void onClick(View view) {
-        if (currentBitmap != null) {
-            try {
-                Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
-                        new Date(), createImageFile(), getMoodFromSpinner());
-
-                if (updatingNote == null) {// if activity in update mode update note.
-                    databaseHelper.addNoteInDB(sqLiteDatabase, note);
-                } else {
-                    note.setDate(updatingNote.getDate());
-                    note.setId(updatingNote.getId());
-                    databaseHelper.updateNoteInDB(sqLiteDatabase, note);
-                }
-            } catch (IOException e) {
-                Toast.makeText(CreateNote.this, "Error note saving: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
-                    new Date(), null, getMoodFromSpinner());
-
-            if (updatingNote == null) {// If activity in update mode update note.
-                databaseHelper.addNoteInDB(sqLiteDatabase, note);
-            } else {
-                note.setImage(updatingNote.getImage());
-                note.setId(updatingNote.getId());
-                databaseHelper.updateNoteInDB(sqLiteDatabase, note);
-            }
-        }
-
-        Intent intent = new Intent(CreateNote.this, MainActivity.class);
-        startActivity(intent);
-    }
-
-    /**
-     * Creating image file.
-     */
-    private String createImageFile() throws IOException {
-        String extr = Environment.getExternalStorageDirectory().toString();
-        File mFolder = new File(extr + "/DiaryImages");
-        if (!mFolder.exists()) {
-            mFolder.mkdir();
-        }
-        File f = new File(mFolder.getAbsolutePath(), (new Date()).getTime() + "image.png");// Create with an unique name
-        FileOutputStream fos = new FileOutputStream(f);
-        currentBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-        fos.flush();
-        fos.close();
-        currentBitmap.recycle();
-        return f.getAbsolutePath();
+        Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
+                DateUtils.convertDateToString(new Date()), getMoodFromSpinner());
+        presenter.saveNote(note, currentBitmap);
     }
 
     /**
@@ -244,4 +210,32 @@ public class CreateNote extends AppCompatActivity {
         return inSampleSize;
     }
 
+    @Override
+    public void showProgressDialog() {
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.setMessage(getString(R.string.message_loading));
+        mProgressDialog.show();
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        mProgressDialog.cancel();
+    }
+
+    @Override
+    public void showMessage(int message) {
+
+    }
+
+    @Override
+    public void showMessage(String message) {
+
+    }
+
+    @Override
+    public Activity getActivity() {
+        return this;
+    }
 }

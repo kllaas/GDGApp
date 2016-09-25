@@ -17,6 +17,7 @@ import android.view.View;
 
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.RecyclerAdapter;
+import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
 import com.alexey_klimchuk.gdgapp.models.Note;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, CreateNote.class);
+                Intent intent = new Intent(MainActivity.this, CreateNoteActivity.class);
                 startActivity(intent);
             }
         });

@@ -7,7 +7,7 @@
     android:paddingEnd="@dimen/medium_margin"
     android:paddingStart="@dimen/medium_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".activities.CreateNote"
+    tools:context=".create_note.CreateNoteActivity"
     tools:showIn="@layout/activity_create_note">
 
     <RelativeLayout
@@ -59,7 +59,6 @@
             android:layout_below="@id/edit_text_content"
             android:layout_marginTop="@dimen/medium_margin"
             android:background="@drawable/button_style"
-            android:onClick="onClick"
             android:text="@string/create_note"
             android:textColor="@color/colorWhite" />
 

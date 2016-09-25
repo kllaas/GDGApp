@@ -12,7 +12,7 @@ import java.util.Locale;
  * Created by Alex on 24.03.2016.
  * Class to convert Date to String (String to Date) in specify format
  */
-public class DateToStringConverter {
+public class DateUtils {
 
     private static final String TAG = "mDateStringConverter";
 

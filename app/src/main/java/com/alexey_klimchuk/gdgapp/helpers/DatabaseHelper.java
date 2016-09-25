@@ -68,7 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
         newValues.put(NAME_COLUMN, note.getName());
         newValues.put(CONTENT_COLUMN, note.getContent());
         newValues.put(IMAGE_COLUMN, note.getImage());
-        newValues.put(DATE_COLUMN, DateToStringConverter.convertDateToString(note.getDate()));
+        newValues.put(DATE_COLUMN, note.getDate());
         newValues.put(MOOD_COLUMN, note.getMood().ordinal());
 
         sqLiteDatabase.insert(DATABASE_TABLE_NAME, null, newValues);
@@ -84,7 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
         newValues.put(NAME_COLUMN, note.getName());
         newValues.put(CONTENT_COLUMN, note.getContent());
         newValues.put(IMAGE_COLUMN, note.getImage());
-        newValues.put(DATE_COLUMN, DateToStringConverter.convertDateToString(note.getDate()));
+        newValues.put(DATE_COLUMN, note.getDate());
         newValues.put(MOOD_COLUMN, note.getMood().ordinal());
 
         sqLiteDatabase.update(DATABASE_TABLE_NAME, newValues, ID_COLUMN + " = ?", new String[]{note.getId()});
@@ -103,7 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
         note.setName(cursor.getString((cursor.getColumnIndex(NAME_COLUMN))));
         note.setContent(cursor.getString((cursor.getColumnIndex(CONTENT_COLUMN))));
         note.setImage(cursor.getString((cursor.getColumnIndex(IMAGE_COLUMN))));
-        note.setDate(DateToStringConverter.convertStringToDate(cursor.getString((cursor.getColumnIndex(DATE_COLUMN)))));
+        note.setDate(cursor.getString(cursor.getColumnIndex(DATE_COLUMN)));
         note.setMood(Note.Mood.values()[cursor.getInt((cursor.getColumnIndex(MOOD_COLUMN)))]);
 
         cursor.close();
@@ -125,7 +125,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
                 note.setName(cursor.getString((cursor.getColumnIndex(NAME_COLUMN))));
                 note.setContent(cursor.getString((cursor.getColumnIndex(CONTENT_COLUMN))));
                 note.setImage(cursor.getString((cursor.getColumnIndex(IMAGE_COLUMN))));
-                note.setDate(DateToStringConverter.convertStringToDate(cursor.getString((cursor.getColumnIndex(DATE_COLUMN)))));
+                note.setDate(cursor.getString(cursor.getColumnIndex(DATE_COLUMN)));
                 note.setMood(Note.Mood.values()[cursor.getInt((cursor.getColumnIndex(MOOD_COLUMN)))]);
                 notes.add(note);
             } while (cursor.moveToNext());
@@ -149,7 +149,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
     public ArrayList<Note> getNotesByDate(SQLiteDatabase sqLiteDatabase, Date date) {
         final ArrayList<Note> notes = new ArrayList<Note>();
         String query = "SELECT * " + " FROM " + DATABASE_TABLE_NAME + " WHERE " +
-                DATE_COLUMN + " = '" + DateToStringConverter.convertDateToString(date) + "'";
+                DATE_COLUMN + " = '" + DateUtils.convertDateToString(date) + "'";
         Cursor cursor = sqLiteDatabase.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
@@ -159,7 +159,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
                 note.setName(cursor.getString((cursor.getColumnIndex(NAME_COLUMN))));
                 note.setContent(cursor.getString((cursor.getColumnIndex(CONTENT_COLUMN))));
                 note.setImage(cursor.getString((cursor.getColumnIndex(IMAGE_COLUMN))));
-                note.setDate(DateToStringConverter.convertStringToDate(cursor.getString((cursor.getColumnIndex(DATE_COLUMN)))));
+                note.setDate(cursor.getString(cursor.getColumnIndex(DATE_COLUMN)));
                 note.setMood(Note.Mood.values()[cursor.getInt((cursor.getColumnIndex(MOOD_COLUMN)))]);
                 notes.add(note);
             } while (cursor.moveToNext());

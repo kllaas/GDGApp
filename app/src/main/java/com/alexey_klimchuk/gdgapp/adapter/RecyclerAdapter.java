@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.Details;
-import com.alexey_klimchuk.gdgapp.helpers.DateToStringConverter;
 import com.alexey_klimchuk.gdgapp.models.Note;
 
 import java.io.File;
@@ -106,7 +105,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         }
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_date)).
-                setText(DateToStringConverter.convertDateToString(mNotes.get(position).getDate()));
+                setText(mNotes.get(position).getDate());
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_content)).
                 setText(mNotes.get(position).getContent());
