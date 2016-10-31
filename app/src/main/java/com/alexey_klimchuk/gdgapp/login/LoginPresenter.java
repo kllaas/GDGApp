@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.R;
-import com.alexey_klimchuk.gdgapp.activities.MainActivity;
+import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -19,14 +19,13 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginPresenter implements LoginRelations.Presenter {
 
     private static final String TAG = "mLoginPresenter";
-    private final LoginRelations.View mLoginView;
+    private final LoginRelations.View view;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-
     public LoginPresenter(LoginRelations.View loginView) {
-        mLoginView = loginView;
+        view = loginView;
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -37,8 +36,8 @@ public class LoginPresenter implements LoginRelations.Presenter {
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Intent intent = new Intent(mLoginView.getActivity(), MainActivity.class);
-                    mLoginView.getActivity().startActivity(intent);
+                    Intent intent = new Intent(view.getActivity(), NotesActivity.class);
+                    view.getActivity().startActivity(intent);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -52,38 +51,33 @@ public class LoginPresenter implements LoginRelations.Presenter {
 
     @Override
     public void login(String email, String password) {
-        if (!validateForm(email, password)) {
+        if (!isValid(email, password)) {
             return;
         }
+        view.showProgressDialog();
 
-        mLoginView.showProgressDialog();
-
-        // [START sign_in_with_email]
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mLoginView.getActivity(), new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(view.getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "signInWithEmail:failed", task.getException());
-                            mLoginView.showMessage(R.string.auth_failed);
-                        }
-
-                        mLoginView.hideProgressDialog();
-                        // [END_EXCLUDE]
+                        handleCompleteLogging(task);
                     }
                 });
     }
 
-    private boolean validateForm(String email, String password) {
+    private void handleCompleteLogging(@NonNull Task<AuthResult> task) {
+        if (!task.isSuccessful()) {
+            Log.w(TAG, "signInWithEmail:failed", task.getException());
+            view.showMessage(R.string.auth_failed);
+        }
+        view.hideProgressDialog();
+    }
+
+    private boolean isValid(String email, String password) {
         if (email.length() > 0 && password.length() > 0) {
             return true;
         }
-        mLoginView.showMessage(R.string.fields_not_walid);
+        view.showMessage(R.string.fields_not_walid);
         return false;
     }
 }

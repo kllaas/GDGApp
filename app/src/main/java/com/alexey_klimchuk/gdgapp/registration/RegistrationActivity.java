@@ -20,7 +20,6 @@ import butterknife.OnClick;
  */
 public class RegistrationActivity extends AppCompatActivity implements RegistrationRelations.View {
 
-    private static final String TAG = "mRegistration";
     @BindView(R.id.edit_text_name_registration)
     EditText name;
     @BindView(R.id.edit_text_password_registration)

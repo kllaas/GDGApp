@@ -20,7 +20,6 @@
             android:id="@+id/edit_text_name_create"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/image_view_details"
             android:hint="@string/note_name"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/large_text_size" />

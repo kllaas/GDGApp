@@ -19,7 +19,6 @@ import butterknife.OnClick;
 
 public class LoginActivity extends AppCompatActivity implements LoginRelations.View {
 
-    private static final String TAG = "mLogin";
     @BindView(R.id.edit_text_password_login)
     EditText password;
     @BindView(R.id.edit_text_login)

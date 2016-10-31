@@ -1,7 +1,6 @@
-package com.alexey_klimchuk.gdgapp.create_note;
+package com.alexey_klimchuk.gdgapp.detail_note;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -9,7 +8,7 @@ import com.alexey_klimchuk.gdgapp.data.Note;
  * Created by Alexey on 24.09.2016.
  */
 
-public class CreateNoteRelations {
+public class DetailNoteRelations {
 
     interface View {
 
@@ -17,16 +16,18 @@ public class CreateNoteRelations {
 
         void hideProgressDialog();
 
-        void showMessage(int message);
-
-        void showMessage(String message);
+        void updateViews(Note note);
 
         Activity getActivity();
+
     }
 
     interface Presenter {
 
-        void saveNote(Note note, Bitmap image);
+        void loadNote(String id);
+
+        void deleteNote();
+
     }
 
 }

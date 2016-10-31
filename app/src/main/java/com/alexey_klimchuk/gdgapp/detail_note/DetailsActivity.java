@@ -1,45 +1,32 @@
-package com.alexey_klimchuk.gdgapp.activities;
+package com.alexey_klimchuk.gdgapp.detail_note;
 
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.alexey_klimchuk.gdgapp.R;
-import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
-import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 
-import java.io.File;
+import butterknife.BindView;
 
-public class Details extends AppCompatActivity {
+public class DetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "mDetails";
-    private SQLiteDatabase sqLiteDatabase;
-    private DatabaseHelper databaseHelper;
-    private TextView remindName;
-    private TextView remindContent;
-    private TextView remindDate;
-    private ImageView imageView;
-    private View moodState;
-    private Note mNote;
 
+    @BindView(R.id.mood_icon)
+    public View moodState;
+    @BindView(R.id.text_view_name_details)
+    public TextView noteName;
+    @BindView(R.id.text_view_date_details)
+    public TextView noteDate;
+    @BindView(R.id.text_view_content_details)
+    public TextView noteContent;
+    @BindView(R.id.image_view_details)
+    public ImageView noteImage;
+
+    private Note mNote;
+/*
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,17 +34,6 @@ public class Details extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
-
-        // Initialize views
-        remindName = (TextView) findViewById(R.id.text_view_name_details);
-        remindContent = (TextView) findViewById(R.id.text_view_content_details);
-        remindDate = (TextView) findViewById(R.id.text_view_date_details);
-        imageView = (ImageView) findViewById(R.id.image_view_details);
-        moodState = findViewById(R.id.mood_icon);
-
-        // Initialize db
-        databaseHelper = new DatabaseHelper(this, "mydatabase.db", null, 1);
-        sqLiteDatabase = databaseHelper.getWritableDatabase();
 
         // Set content from note object to views
         fillViews();
@@ -72,34 +48,34 @@ public class Details extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    /**
+   *//**
      * Start Activity to edit note.
      * Put in extras id of current note.
-     */
+     *//*
     private void editNote() {
-        Intent intent = new Intent(Details.this, CreateNoteActivity.class);
+        Intent intent = new Intent(DetailsActivity.this, CreateNoteActivity.class);
         intent.putExtra("id", mNote.getId());
         startActivity(intent);
     }
 
-    /**
+    *//**
      * Set data from note object to views.
-     */
+     *//*
     private void fillViews() {
         Bundle extras = getIntent().getExtras();// Get id of Note from NotesActivity
         mNote = databaseHelper.getNoteById(sqLiteDatabase, extras.getString("id"));// Get note from db
 
-        remindName.setText(mNote.getName());
-        remindContent.setText(mNote.getContent());
-        remindDate.setText(mNote.getDate());
+        noteName.setText(mNote.getName());
+        noteContent.setText(mNote.getContent());
+        noteDate.setText(mNote.getDate());
 
         GradientDrawable gd = new GradientDrawable();// Set mood
         if (mNote.getMood() == Note.Mood.GOOD)
-            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorPrimary));
+            gd.setColor(ContextCompat.getColor(DetailsActivity.this, R.color.colorPrimary));
         if (mNote.getMood() == Note.Mood.NORMAL)
-            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorNormal));
+            gd.setColor(ContextCompat.getColor(DetailsActivity.this, R.color.colorNormal));
         if (mNote.getMood() == Note.Mood.BAD)
-            gd.setColor(ContextCompat.getColor(Details.this, R.color.colorBad));
+            gd.setColor(ContextCompat.getColor(DetailsActivity.this, R.color.colorBad));
         gd.setShape(GradientDrawable.OVAL);
         moodState.setBackground(gd);
 
@@ -112,7 +88,7 @@ public class Details extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 String error = "error image loading: " + e.getMessage();
-                Toast.makeText(Details.this, error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DetailsActivity.this, error, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -140,9 +116,9 @@ public class Details extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
+    *//**
      * Create dialog to delete note.
-     */
+     *//*
     private void createDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialogStyle);
         builder.setTitle("Delete note");
@@ -155,7 +131,7 @@ public class Details extends AppCompatActivity {
                     deleteImageFile();
                 }
                 // Go to NotesActivity after deleting
-                Intent intent = new Intent(Details.this, NotesActivity.class);
+                Intent intent = new Intent(DetailsActivity.this, NotesActivity.class);
                 startActivity(intent);
             }
         });
@@ -163,9 +139,9 @@ public class Details extends AppCompatActivity {
         builder.show();
     }
 
-    /**
+    *//**
      * Delete imageView file.
-     */
+     *//*
     private void deleteImageFile() {
         File imgFile = new File(mNote.getImage());
         if (imgFile.exists()) {
@@ -175,5 +151,5 @@ public class Details extends AppCompatActivity {
                 Log.d(TAG, "file was not deleted");
             }
         }
-    }
+    }*/
 }

@@ -25,6 +25,7 @@
     <string name="sign_up">Sign up</string>
     <string name="message_registration_failed">Registration was failed.</string>
     <string name="message_pass_not_conf">Passwords dont confirm.</string>
+    <string name="message_loading_failed">Sorry, loading was failed.</string>
     <string-array name="mood_variants">
         <item>Good</item>
         <item>Normal</item>

@@ -34,10 +34,8 @@ public class RegistrationPresenter implements RegistrationRelations.Presenter {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
-                    // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
             }
@@ -48,7 +46,7 @@ public class RegistrationPresenter implements RegistrationRelations.Presenter {
 
     @Override
     public void registerUser(String email, String password) {
-        if (!validateForm(email, password)) {
+        if (!isValid(email, password)) {
             return;
         }
 
@@ -58,25 +56,23 @@ public class RegistrationPresenter implements RegistrationRelations.Presenter {
                 .addOnCompleteListener(mRegistrationView.getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.toString());
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-
-                        mRegistrationView.hideProgressDialog();
-
-                        if (!task.isSuccessful()) {
-                            mRegistrationView.showMessage(task.getException().getMessage());
-                        } else {
-                            Intent intent = new Intent(mRegistrationView.getActivity(), LoginActivity.class);
-                            mRegistrationView.getActivity().startActivity(intent);
-                        }
+                        handleRegistrationResult(task);
                     }
                 });
     }
 
-    private boolean validateForm(String email, String password) {
+    private void handleRegistrationResult(@NonNull Task<AuthResult> task) {
+        mRegistrationView.hideProgressDialog();
+
+        if (!task.isSuccessful()) {
+            mRegistrationView.showMessage(task.getException().getMessage());
+        } else {
+            Intent intent = new Intent(mRegistrationView.getActivity(), LoginActivity.class);
+            mRegistrationView.getActivity().startActivity(intent);
+        }
+    }
+
+    private boolean isValid(String email, String password) {
         if (email.length() > 0 && password.length() > 0) {
             return true;
         }

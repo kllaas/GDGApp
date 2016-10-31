@@ -1,4 +1,4 @@
-package com.alexey_klimchuk.gdgapp.create_note;
+package com.alexey_klimchuk.gdgapp.edit_note;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -9,7 +9,7 @@ import com.alexey_klimchuk.gdgapp.data.Note;
  * Created by Alexey on 24.09.2016.
  */
 
-public class CreateNoteRelations {
+public class EditNoteRelations {
 
     interface View {
 

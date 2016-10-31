@@ -1,4 +1,4 @@
-package com.alexey_klimchuk.gdgapp.models;
+package com.alexey_klimchuk.gdgapp.data;
 
 import java.util.UUID;
 
@@ -15,33 +15,35 @@ public class Note {
     private String image = "";
     private Mood mMood;
 
+    public Note(String id, String name, String content, String date, String image, Mood mMood) {
+        this.id = id;
+        this.name = name;
+        this.content = content;
+        this.date = date;
+        this.image = image;
+        this.mMood = mMood;
+    }
+
     public Note(String name, String content, String date, Mood mMood) {
-        this.id = UUID.randomUUID().toString();// Create uncial id.
         this.name = name;
         this.content = content;
         this.date = date;
         this.mMood = mMood;
     }
 
-    /**
-     * Mood states
-     */
-    public enum Mood {
-        GOOD,
-        NORMAL,
-        BAD
-    }
-
     public Note() {
     }
 
     public Note(String name, String content, String date, String image, Mood mood) {
-        this.id = UUID.randomUUID().toString();// Create uncial id.
         this.name = name;
         this.content = content;
         this.date = date;
         this.image = image;
         mMood = mood;
+    }
+
+    public void setUnicalId() {
+        this.id = UUID.randomUUID().toString();// Create uncial id.
     }
 
     public Mood getMood() {
@@ -90,6 +92,15 @@ public class Note {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    /**
+     * Mood states
+     */
+    public enum Mood {
+        GOOD,
+        NORMAL,
+        BAD
     }
 
 }

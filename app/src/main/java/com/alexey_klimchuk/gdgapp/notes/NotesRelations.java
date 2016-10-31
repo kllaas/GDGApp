@@ -1,32 +1,32 @@
-package com.alexey_klimchuk.gdgapp.create_note;
+package com.alexey_klimchuk.gdgapp.notes;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
+
+import java.util.List;
 
 /**
  * Created by Alexey on 24.09.2016.
  */
 
-public class CreateNoteRelations {
+public class NotesRelations {
 
     interface View {
+
+        void refreshData(List<Note> Notes);
 
         void showProgressDialog();
 
         void hideProgressDialog();
-
-        void showMessage(int message);
-
-        void showMessage(String message);
 
         Activity getActivity();
     }
 
     interface Presenter {
 
-        void saveNote(Note note, Bitmap image);
+        void loadNotes();
+
     }
 
 }

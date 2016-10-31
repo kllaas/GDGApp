@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
-import com.alexey_klimchuk.gdgapp.models.Note;
+import com.alexey_klimchuk.gdgapp.data.Note;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +40,11 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
             + IMAGE_COLUMN + " text, "
             + DATE_COLUMN + " text);";
 
+    public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,
+                          int version) {
+        super(context, name, factory, version);
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DATABASE_CREATE_SCRIPT);
@@ -51,11 +56,6 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
         db.execSQL("DROP TABLE IF IT EXISTS " + DATABASE_TABLE_NAME);
         // Create new table
         onCreate(db);
-    }
-
-    public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,
-                          int version) {
-        super(context, name, factory, version);
     }
 
     /**
