@@ -16,6 +16,7 @@
 
 package com.alexey_klimchuk.gdgapp.data.source;
 
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -108,22 +109,24 @@ public class NotesRepository implements NotesDataSource {
         // Query the local storage if available. If not, query the network.
         mNotesLocalDataSource.getNotes(new LoadNotesCallback() {
             @Override
-            public void onNotesLoaded(List<Note> Notes) {
-                refreshCache(Notes);
-                callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
+            public void onNotesLoaded(List<Note> notes) {
+                //refreshCache(Notes);
+                //callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
+                callback.onNotesLoaded(notes);
             }
 
             @Override
             public void onDataNotAvailable() {
+                callback.onDataNotAvailable();
                 //getNotesFromRemoteDataSource(callback);
             }
         });
     }
 
     @Override
-    public void saveNote(@NonNull Note note, SaveNoteCallback callback) {
-        mNotesRemoteDataSource.saveNote(note, callback);
-        mNotesLocalDataSource.saveNote(note, callback);
+    public void saveNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
+        mNotesRemoteDataSource.saveNote(note, image, callback);
+        mNotesLocalDataSource.saveNote(note, image, callback);
 
         // Do in memory cache update to keep the app UI up to date
         if (mCachedNotes == null) {
@@ -133,15 +136,16 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note Note) {
-        mNotesRemoteDataSource.editNote(Note);
-        mNotesLocalDataSource.editNote(Note);
+    public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
+        mNotesRemoteDataSource.editNote(note, image, callback);
+        mNotesLocalDataSource.editNote(note, image, callback);
 
         // Do in memory cache update to keep the app UI up to date
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
         }
-        mCachedNotes.put(Note.getId(), Note);
+        mCachedNotes.remove(note.getId());
+        mCachedNotes.put(note.getId(), note);
     }
 
     /**
@@ -154,13 +158,13 @@ public class NotesRepository implements NotesDataSource {
     @Override
     public void getNote(@NonNull final String noteId, @NonNull final GetNoteCallback callback) {
 
-        Note cachedNote = getNoteWithId(noteId);
+       /* Note cachedNote = getNoteWithId(noteId);
 
         // Respond immediately with cache if available
         if (cachedNote != null) {
             callback.onNoteLoaded(cachedNote);
             return;
-        }
+        }*/
 
         // Load from server/persisted if needed.
 
@@ -242,7 +246,7 @@ public class NotesRepository implements NotesDataSource {
     private void refreshLocalDataSource(List<Note> notes) {
         mNotesLocalDataSource.deleteAllNotes();
         for (Note note : notes) {
-            mNotesLocalDataSource.saveNote(note, null);
+            mNotesLocalDataSource.saveNote(note, null, null);
         }
     }
 

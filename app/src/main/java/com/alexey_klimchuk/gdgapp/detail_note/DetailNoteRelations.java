@@ -1,6 +1,7 @@
 package com.alexey_klimchuk.gdgapp.detail_note;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -11,6 +12,8 @@ import com.alexey_klimchuk.gdgapp.data.Note;
 public class DetailNoteRelations {
 
     interface View {
+
+        void showEditTask(@NonNull String taskId);
 
         void showProgressDialog();
 

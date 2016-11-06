@@ -4,14 +4,22 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * Created by Alexey on 27.10.2016.
  */
 
 public class BitmapUtils {
+
+    private static final String TAG = "BitmapUtils";
 
     /**
      * Resizing image from gallery to increase performance.
@@ -49,4 +57,32 @@ public class BitmapUtils {
         return inSampleSize;
     }
 
+    /**
+     * Creating image file.
+     */
+    public static String createImageFile(Bitmap bmp) throws IOException {
+        String extr = Environment.getExternalStorageDirectory().toString();
+        File mFolder = new File(extr + "/DiaryImages");
+        if (!mFolder.exists()) {
+            mFolder.mkdir();
+        }
+        File f = new File(mFolder.getAbsolutePath(), (new Date()).getTime() + "image.png");// Create with an unique name
+        FileOutputStream fos = new FileOutputStream(f);
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        fos.flush();
+        fos.close();
+        bmp.recycle();
+        return f.getAbsolutePath();
+    }
+
+    public static void deleteImageFile(String path) {
+        File imgFile = new File(path);
+        if (imgFile.exists()) {
+            if (imgFile.delete()) {
+                Log.d(TAG, "file was deleted");
+            } else {
+                Log.d(TAG, "file was not deleted");
+            }
+        }
+    }
 }

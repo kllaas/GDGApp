@@ -53,7 +53,7 @@ public class DetailsActivity extends AppCompatActivity {
      * Put in extras id of current note.
      *//*
     private void editNote() {
-        Intent intent = new Intent(DetailsActivity.this, CreateNoteActivity.class);
+        Intent intent = new Intent(DetailsActivity.this, EditNoteActivity.class);
         intent.putExtra("id", mNote.getId());
         startActivity(intent);
     }

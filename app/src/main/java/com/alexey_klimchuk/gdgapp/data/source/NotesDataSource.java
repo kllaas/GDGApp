@@ -16,6 +16,7 @@
 
 package com.alexey_klimchuk.gdgapp.data.source;
 
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
@@ -36,9 +37,9 @@ public interface NotesDataSource {
 
     void getNote(@NonNull String NoteId, @NonNull GetNoteCallback callback);
 
-    void saveNote(@NonNull Note Note, SaveNoteCallback callback);
+    void saveNote(@NonNull Note Note, Bitmap image, SaveNoteCallback callback);
 
-    void editNote(@NonNull Note Note);
+    void editNote(@NonNull Note Note, Bitmap image, SaveNoteCallback callback);
 
     void refreshNotes();
 

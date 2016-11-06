@@ -39,6 +39,7 @@ public class NotesDbHelper extends SQLiteOpenHelper {
                     NotesPersistenceContract.NoteEntry.CONTENT_COLUMN + TEXT_TYPE + COMMA_SEP +
                     NotesPersistenceContract.NoteEntry.IMAGE_COLUMN + TEXT_TYPE + COMMA_SEP +
                     NotesPersistenceContract.NoteEntry.DATE_COLUMN + TEXT_TYPE + COMMA_SEP +
+                    NotesPersistenceContract.NoteEntry.IMAGE_LOCAL_COLUMN + TEXT_TYPE + COMMA_SEP +
                     NotesPersistenceContract.NoteEntry.MOOD_COLUMN + TEXT_TYPE +
                     " )";
 

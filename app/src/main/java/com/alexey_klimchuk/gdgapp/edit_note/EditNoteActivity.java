@@ -2,9 +2,7 @@ package com.alexey_klimchuk.gdgapp.edit_note;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -18,13 +16,14 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
 import com.alexey_klimchuk.gdgapp.helpers.DateUtils;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
@@ -40,72 +39,34 @@ import butterknife.OnClick;
 public class EditNoteActivity extends AppCompatActivity implements EditNoteRelations.View {
 
     private static final int PICK_IMAGE_REQUEST = 1;
+    @BindView(R.id.spinner)
+    public Spinner spinner;
+    @BindView(R.id.edit_text_name_create)
+    public EditText noteName;
+    @BindView(R.id.edit_text_content)
+    public EditText noteContent;
+    @BindView(R.id.image_view_create)
+    public ImageView noteImage;
     @BindView(R.id.button_create)
-    public
-    Button editButton;
-    private Spinner spinner;
-    private String[] spinnerValues;
-    private SQLiteDatabase sqLiteDatabase;
-    private DatabaseHelper databaseHelper;
-    private EditText noteName;
-    private EditText noteContent;
-    private ImageView noteImage;
-    private Note updatingNote;
+    public Button buttonEdit;
+    private String[] spinnerValues = new String[]{"Good", "Norm", "Bad"};
     private Bitmap currentBitmap;
 
     private EditNotePresenter presenter;
     private ProgressDialog mProgressDialog;
 
-    /**
-     * Resizing image from gallery to increase performance.
-     */
-    public static Bitmap resizeImage(Context c, Uri uri)
-            throws FileNotFoundException {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, options);
-
-        BitmapFactory.Options finalOptions = new BitmapFactory.Options();
-        finalOptions.inSampleSize = calculateInSampleSize(options, 240, 240);
-
-        return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, finalOptions);
-    }
-
-    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
-    }
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
         ButterKnife.bind(this);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("");
-        setSupportActionBar(toolbar);
+
+        // Get the requested task id
+        String noteId = getIntent().getStringExtra(Constants.ARGUMENT_EDIT_NOTE_ID);
 
         presenter = new EditNotePresenter(this);
+        presenter.loadNote(noteId);
 
         initializeVariables();
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @OnClick(R.id.fab)
@@ -117,31 +78,26 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
      * Initializing  variables
      */
     private void initializeVariables() {
-        ButterKnife.bind(this);
 
-        databaseHelper = new DatabaseHelper(this, "mydatabase.db", null, 1);
-        sqLiteDatabase = databaseHelper.getWritableDatabase();
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
 
-        Bundle extras = getIntent().getExtras();// Get id of Note in update mode
-        updatingNote = databaseHelper.getNoteById(sqLiteDatabase, extras.getString("id"));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
 
-        noteName = (EditText) findViewById(R.id.edit_text_name_create);
-        noteContent = (EditText) findViewById(R.id.edit_text_content);
-        noteImage = (ImageView) findViewById(R.id.image_view_create);
-        spinner = (Spinner) findViewById(R.id.spinner);
-        // Create an ArrayAdapter using the string array and a custom spinner layout
-        spinnerValues = getResources().getStringArray(R.array.mood_variants);
         CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(EditNoteActivity.this, R.layout.mood_item, spinnerValues);
+
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);// Apply the adapter to the spinner
 
-        editButton.setText(R.string.edit_note);
-        noteName.setText(updatingNote.getName());
-        noteContent.setText(updatingNote.getContent());
-        if (!updatingNote.getImage().equals("")) {
-            //TODO: show picture with Picasso.
-        }
+        buttonEdit.setText(R.string.edit_note);
     }
 
     /**
@@ -165,11 +121,12 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri selectedImageUri = data.getData();
             try {
-                currentBitmap = resizeImage(EditNoteActivity.this, selectedImageUri);
-                noteImage = (ImageView) findViewById(R.id.image_view_create);
-                noteImage.setDrawingCacheEnabled(false); // clear drawing cache
+                currentBitmap = BitmapUtils.resizeImage(EditNoteActivity.this, selectedImageUri);
+                ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
 
-                noteImage.setImageBitmap(currentBitmap);
+                // clear drawing cache
+                imageView.setDrawingCacheEnabled(false);
+                imageView.setImageBitmap(currentBitmap);
             } catch (IOException e) {
                 Toast.makeText(EditNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -177,15 +134,13 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     }
 
     /**
-     * Creating or updating note.
-     * In create mode: if image was not picked set null to Note.image.
-     * In update mode: if image was not picked set image from updatingNote to Note.image
+     * Creating note.
      */
     @OnClick(R.id.button_create)
     public void onClick(View view) {
         Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
                 DateUtils.convertDateToString(new Date()), getMoodFromSpinner());
-        presenter.saveNote(note, currentBitmap);
+        presenter.updateNote(note, currentBitmap);
     }
 
     /**
@@ -226,7 +181,75 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     }
 
     @Override
+    public void updateViews(Note note) {
+        setText(note);
+
+        setMood(note);
+
+        setImage(note);
+    }
+
+    private void setImage(Note note) {
+        if (note.getLocalImage() != null) {
+            try {
+                File imgFile = new File(note.getLocalImage());
+                if (imgFile.exists()) {
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    ((EditNoteActivity) getActivity()).getNoteImage().setImageBitmap(myBitmap);
+                }
+            } catch (Exception e) {
+                String error = "error image loading: " + e.getMessage();
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void setMood(Note note) {
+        switch (note.getMood()) {
+            case GOOD:
+                spinner.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setSelection(0);
+                    }
+                });
+                break;
+            case NORMAL:
+                spinner.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setSelection(1);
+                    }
+                });
+                break;
+            case BAD:
+                spinner.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setSelection(2);
+                    }
+                });
+                break;
+        }
+    }
+
+    private void setText(Note note) {
+        noteName.setText(note.getName());
+        noteContent.setText(note.getContent());
+    }
+
+    @Override
     public Activity getActivity() {
         return this;
+    }
+
+    @Override
+    public void saveResult() {
+        setResult(Activity.RESULT_OK);
+        finish();
+    }
+
+    public ImageView getNoteImage() {
+        return noteImage;
     }
 }

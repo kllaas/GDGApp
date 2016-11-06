@@ -35,6 +35,7 @@ public final class NotesPersistenceContract {
         public static final String NAME_COLUMN = "name";
         public static final String CONTENT_COLUMN = "content";
         public static final String IMAGE_COLUMN = "image";
+        public static final String IMAGE_LOCAL_COLUMN = "image_local";
         public static final String DATE_COLUMN = "date";
         public static final String MOOD_COLUMN = "mood";
     }

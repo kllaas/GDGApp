@@ -1,12 +1,16 @@
 package com.alexey_klimchuk.gdgapp.detail_note;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 import com.alexey_klimchuk.gdgapp.utils.ActivityUtils;
 
 import butterknife.BindView;
@@ -21,6 +25,8 @@ public class DetailNoteActivity extends AppCompatActivity {
 
     @BindView(R.id.image_view_details)
     public ImageView noteImage;
+    @BindView(R.id.fab)
+    public FloatingActionButton fab;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,10 +51,29 @@ public class DetailNoteActivity extends AppCompatActivity {
         }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startNotesActivity();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        startNotesActivity();
+    }
+
+    private void startNotesActivity() {
+        Intent intent = new Intent(DetailNoteActivity.this, NotesActivity.class);
+        startActivity(intent);
     }
 
     public ImageView getNoteImage() {
         return noteImage;
     }
 
+    public FloatingActionButton getFab() {
+        return fab;
+    }
 }

@@ -33,7 +33,7 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     public void saveNote(final Note note, final Bitmap image) {
         mView.showProgressDialog();
         note.setUnicalId();
-        mNotesRepository.saveNote(note, new NotesDataSource.SaveNoteCallback() {
+        mNotesRepository.saveNote(note, image, new NotesDataSource.SaveNoteCallback() {
             @Override
             public void onNoteSaved() {
                 if (oneWaySaved) {

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
+import com.alexey_klimchuk.gdgapp.edit_note.EditNoteActivity;
 
 import java.io.File;
 
@@ -47,6 +49,14 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     private DetailNoteRelations.Presenter mPresenter;
     private ProgressDialog mProgressDialog;
 
+    private String noteId;
+    private View.OnClickListener fabOnClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            showEditTask(noteId);
+        }
+    };
+
     public static DetailsFragment newInstance(@Nullable String taskId) {
         Bundle arguments = new Bundle();
         arguments.putString(Constants.EXTRA_NOTE_ID, taskId);
@@ -63,13 +73,14 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
         ButterKnife.bind(this, root);
         setHasOptionsMenu(true);
 
-        String id = getArguments().getString(Constants.EXTRA_NOTE_ID);
+        noteId = getArguments().getString(Constants.EXTRA_NOTE_ID);
         mPresenter = new DetailNotePresenter(this);
-        mPresenter.loadNote(id);
+        mPresenter.loadNote(noteId);
+
+        ((DetailNoteActivity) getActivity()).getFab().setOnClickListener(fabOnClick);
 
         return root;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -85,25 +96,25 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_details, menu);
     }
-
-/*    @Override
-    public void showEditTask(@NonNull String taskId) {*//*
-        Intent intent = new Intent(getContext(), AddEditTaskActivity.class);
-        intent.putExtra(AddEditTaskFragment.ARGUMENT_EDIT_TASK_ID, taskId);
-        startActivityForResult(intent, REQUEST_EDIT_TASK);*//*
-    }
-
+/*
     @Override
     public void showTaskDeleted() {
         getActivity().finish();
     }*/
 
     @Override
+    public void showEditTask(@NonNull String noteId) {
+        Intent intent = new Intent(getContext(), EditNoteActivity.class);
+        intent.putExtra(Constants.ARGUMENT_EDIT_NOTE_ID, noteId);
+        startActivityForResult(intent, REQUEST_EDIT_TASK);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_EDIT_TASK) {
             // If the task was edited successfully, go back to the list.
             if (resultCode == Activity.RESULT_OK) {
-                getActivity().finish();
+                mPresenter.loadNote(noteId);
             }
         }
     }
@@ -132,9 +143,9 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     }
 
     private void setImage(Note note) {
-        if (note.getImage() != null) {
+        if (note.getLocalImage() != null) {
             try {
-                File imgFile = new File(note.getImage());
+                File imgFile = new File(note.getLocalImage());
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                     ((DetailNoteActivity) getActivity()).getNoteImage().setImageBitmap(myBitmap);

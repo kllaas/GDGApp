@@ -13,6 +13,7 @@ public class Note {
     private String content = "";
     private String date;
     private String image = "";
+    private String localImage = "";
     private Mood mMood;
 
     public Note(String id, String name, String content, String date, String image, Mood mMood) {
@@ -40,6 +41,24 @@ public class Note {
         this.date = date;
         this.image = image;
         mMood = mood;
+    }
+
+    public Note(String id, String name, String content, String date, String image, String localImage, Mood mMood) {
+        this.id = id;
+        this.name = name;
+        this.content = content;
+        this.date = date;
+        this.image = image;
+        this.localImage = localImage;
+        this.mMood = mMood;
+    }
+
+    public String getLocalImage() {
+        return localImage;
+    }
+
+    public void setLocalImage(String localImage) {
+        this.localImage = localImage;
     }
 
     public void setUnicalId() {

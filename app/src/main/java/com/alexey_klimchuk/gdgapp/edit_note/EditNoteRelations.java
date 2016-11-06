@@ -21,12 +21,18 @@ public class EditNoteRelations {
 
         void showMessage(String message);
 
+        void updateViews(Note note);
+
         Activity getActivity();
+
+        void saveResult();
     }
 
     interface Presenter {
 
-        void saveNote(Note note, Bitmap image);
+        void updateNote(Note note, Bitmap image);
+
+        void loadNote(String id);
     }
 
 }

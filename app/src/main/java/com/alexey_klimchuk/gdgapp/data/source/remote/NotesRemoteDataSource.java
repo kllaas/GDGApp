@@ -16,6 +16,7 @@
 
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
@@ -92,7 +93,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull Note note, SaveNoteCallback callback) {
+    public void saveNote(@NonNull Note note, Bitmap bitmap, SaveNoteCallback callback) {
         NOTES_SERVICE_DATA.put(note.getId(), note);
 
         if (callback != null)
@@ -100,9 +101,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note note) {
+    public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
         NOTES_SERVICE_DATA.remove(note.getId());
         NOTES_SERVICE_DATA.put(note.getId(), note);
+        if (callback != null)
+            callback.onNoteSaved();
     }
 
 

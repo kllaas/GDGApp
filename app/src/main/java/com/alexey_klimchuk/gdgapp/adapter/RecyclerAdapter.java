@@ -81,7 +81,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         if (mNotes.get(position).getImage() != null) {
             try {
                 ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
-                File imgFile = new File(mNotes.get(position).getImage());
+                File imgFile = new File(mNotes.get(position).getLocalImage());
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                     imageView.setImageBitmap(myBitmap);
