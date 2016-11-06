@@ -1,7 +1,9 @@
 package com.alexey_klimchuk.gdgapp.create_note;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.view.inputmethod.InputMethodManager;
 
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
@@ -19,8 +21,6 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
 
     private CreateNoteRelations.View mView;
 
-    private boolean oneWaySaved = false;
-
     private NotesRepository mNotesRepository;
 
     public CreateNotePresenter(CreateNoteActivity activity) {
@@ -36,13 +36,10 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
         mNotesRepository.saveNote(note, image, new NotesDataSource.SaveNoteCallback() {
             @Override
             public void onNoteSaved() {
-                if (oneWaySaved) {
-                    mView.hideProgressDialog();
-                    Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
-                    mView.getActivity().startActivity(intent);
-                } else {
-                    oneWaySaved = true;
-                }
+                mView.hideProgressDialog();
+                Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
+                mView.getActivity().startActivity(intent);
+                hideKeyBoard();
             }
 
             @Override
@@ -51,6 +48,11 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
                 mView.showMessage(R.string.message_loading_failed);
             }
         });
+    }
+
+    private void hideKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) mView.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mView.getActivity().findViewById(android.R.id.content).getWindowToken(), 0);
     }
 
 }

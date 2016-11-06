@@ -27,9 +27,11 @@ import android.util.Log;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContract.NoteEntry;
@@ -94,7 +96,7 @@ public class NotesLocalDataSource implements NotesDataSource {
                         c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
                 Note.Mood mood =
                         Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-                Note note = new Note(itemId, name, content, date, image, mood);
+                Note note = new Note(itemId, name, content, DateUtils.convertStringToDate(date), image, mood);
                 note.setLocalImage(imageLocal);
                 Notes.add(note);
                 i++;
@@ -158,7 +160,7 @@ public class NotesLocalDataSource implements NotesDataSource {
                     c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
             Note.Mood mood =
                     Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-            note = new Note(itemId, name, content, date, image, localImage, mood);
+            note = new Note(itemId, name, content, DateUtils.convertStringToDate(date), image, localImage, mood);
         }
         if (c != null) {
             c.close();
@@ -182,16 +184,11 @@ public class NotesLocalDataSource implements NotesDataSource {
         values.put(NoteEntry.NAME_COLUMN, note.getContent());
         values.put(NoteEntry.CONTENT_COLUMN, note.getContent());
         values.put(NoteEntry.IMAGE_COLUMN, note.getImage());
-        values.put(NoteEntry.DATE_COLUMN, note.getDate());
+        values.put(NoteEntry.DATE_COLUMN, DateUtils.convertDateToString(new Date(note.getDate())));
         values.put(NoteEntry.MOOD_COLUMN, note.getMood().ordinal());
 
         if (image != null) {
-            try {
-                values.put(NoteEntry.IMAGE_LOCAL_COLUMN, BitmapUtils.createImageFile(image));
-                BitmapUtils.deleteImageFile(note.getLocalImage());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            values.put(NoteEntry.IMAGE_LOCAL_COLUMN, note.getLocalImage());
         }
 
         db.update(NoteEntry.TABLE_NAME, values, NoteEntry.COLUMN_NAME_ENTRY_ID + " = ?",
@@ -213,7 +210,7 @@ public class NotesLocalDataSource implements NotesDataSource {
         values.put(NoteEntry.NAME_COLUMN, Note.getContent());
         values.put(NoteEntry.CONTENT_COLUMN, Note.getContent());
         values.put(NoteEntry.IMAGE_COLUMN, Note.getImage());
-        values.put(NoteEntry.DATE_COLUMN, Note.getDate());
+        values.put(NoteEntry.DATE_COLUMN, DateUtils.convertDateToString(new Date(Note.getDate())));
         values.put(NoteEntry.MOOD_COLUMN, Note.getMood().ordinal());
 
         if (bitmap != null) {
@@ -248,7 +245,7 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void deleteNote(@NonNull String NoteId) {
+    public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         String selection = NoteEntry.COLUMN_NAME_ENTRY_ID + " LIKE ?";
@@ -257,5 +254,6 @@ public class NotesLocalDataSource implements NotesDataSource {
         db.delete(NoteEntry.TABLE_NAME, selection, selectionArgs);
 
         db.close();
+        callback.onNoteDeleted();
     }
 }

@@ -21,7 +21,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -94,49 +96,68 @@ public class NotesRepository implements NotesDataSource {
     public void getNotes(@NonNull final LoadNotesCallback callback) {
 
         // Respond immediately with cache if available and not dirty
-        /*if (mCachedNotes != null && !mCacheIsDirty) {
+        if (mCachedNotes != null && !mCacheIsDirty) {
             callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
             return;
-        }*/
+        }
 
-        /*if (mCacheIsDirty) {
+        if (mCacheIsDirty || mCachedNotes == null) {
             // If the cache is dirty we need to fetch new data from the network.
             getNotesFromRemoteDataSource(callback);
-        } else {
+        }
 
-        }*/
+        if (mCachedNotes != null && !mCacheIsDirty) {
+            // Query the local storage if available. If not, query the network.
+            mNotesLocalDataSource.getNotes(new LoadNotesCallback() {
+                @Override
+                public void onNotesLoaded(List<Note> notes) {
+                    refreshCache(notes);
+                    callback.onNotesLoaded(notes);
+                }
 
-        // Query the local storage if available. If not, query the network.
-        mNotesLocalDataSource.getNotes(new LoadNotesCallback() {
+                @Override
+                public void onDataNotAvailable() {
+                    getNotesFromRemoteDataSource(callback);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void saveNote(@NonNull final Note note, final Bitmap image,
+                         final SaveNoteCallback callback) {
+        mNotesRemoteDataSource.saveNote(note, image, new SaveNoteCallback() {
             @Override
-            public void onNotesLoaded(List<Note> notes) {
-                //refreshCache(Notes);
-                //callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
-                callback.onNotesLoaded(notes);
+            public void onNoteSaved() {
+                // Do in memory cache update to keep the app UI up to date
+                if (mCachedNotes == null) {
+                    mCachedNotes = new LinkedHashMap<>();
+                }
+                ArrayList<Note> notes = new ArrayList<Note>(mCachedNotes.values());
+                notes.add(0, note);
+                refreshCache(notes);
+
+                mNotesLocalDataSource.saveNote(note, image, callback);
             }
 
             @Override
-            public void onDataNotAvailable() {
-                callback.onDataNotAvailable();
-                //getNotesFromRemoteDataSource(callback);
+            public void onError() {
+                callback.onError();
             }
         });
     }
 
     @Override
-    public void saveNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
-        mNotesRemoteDataSource.saveNote(note, image, callback);
-        mNotesLocalDataSource.saveNote(note, image, callback);
-
-        // Do in memory cache update to keep the app UI up to date
-        if (mCachedNotes == null) {
-            mCachedNotes = new LinkedHashMap<>();
-        }
-        mCachedNotes.put(note.getId(), note);
-    }
-
-    @Override
     public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
+        if (image != null) {
+            try {
+                BitmapUtils.deleteImageFile(note.getLocalImage());
+                note.setLocalImage(BitmapUtils.createImageFile(image));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         mNotesRemoteDataSource.editNote(note, image, callback);
         mNotesLocalDataSource.editNote(note, image, callback);
 
@@ -144,7 +165,6 @@ public class NotesRepository implements NotesDataSource {
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
         }
-        mCachedNotes.remove(note.getId());
         mCachedNotes.put(note.getId(), note);
     }
 
@@ -158,13 +178,13 @@ public class NotesRepository implements NotesDataSource {
     @Override
     public void getNote(@NonNull final String noteId, @NonNull final GetNoteCallback callback) {
 
-       /* Note cachedNote = getNoteWithId(noteId);
+        Note cachedNote = getNoteWithId(noteId);
 
         // Respond immediately with cache if available
         if (cachedNote != null) {
             callback.onNoteLoaded(cachedNote);
             return;
-        }*/
+        }
 
         // Load from server/persisted if needed.
 
@@ -209,19 +229,23 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void deleteNote(@NonNull String NoteId) {
-        mNotesRemoteDataSource.deleteNote(NoteId);
-        mNotesLocalDataSource.deleteNote(NoteId);
+    public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
+        mNotesRemoteDataSource.deleteNote(NoteId, callback);
+        mNotesLocalDataSource.deleteNote(NoteId, callback);
 
-        mCachedNotes.remove(NoteId);
+        if (mCachedNotes == null) {
+            mCachedNotes = new LinkedHashMap<>();
+        } else {
+            mCachedNotes.remove(NoteId);
+        }
     }
 
     private void getNotesFromRemoteDataSource(@NonNull final LoadNotesCallback callback) {
         mNotesRemoteDataSource.getNotes(new LoadNotesCallback() {
             @Override
-            public void onNotesLoaded(List<Note> Notes) {
-                refreshCache(Notes);
-                refreshLocalDataSource(Notes);
+            public void onNotesLoaded(List<Note> notes) {
+                refreshCache(notes);
+                refreshLocalDataSource(notes);
                 callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
             }
 
@@ -232,13 +256,13 @@ public class NotesRepository implements NotesDataSource {
         });
     }
 
-    private void refreshCache(List<Note> Notes) {
+    private void refreshCache(List<Note> notes) {
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
         }
         mCachedNotes.clear();
-        for (Note Note : Notes) {
-            mCachedNotes.put(Note.getId(), Note);
+        for (Note note : notes) {
+            mCachedNotes.put(note.getId(), note);
         }
         mCacheIsDirty = false;
     }

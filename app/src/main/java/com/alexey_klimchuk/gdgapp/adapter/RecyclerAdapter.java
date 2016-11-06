@@ -18,8 +18,10 @@ import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.detail_note.DetailNoteActivity;
+import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,6 +29,7 @@ import java.util.List;
  * Adapter for RecyclerView in NotesActivity.
  */
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
+
     private static final String TAG = "mRecyclerAdapter";
     private List<Note> mNotes;
     private Context mContext;
@@ -46,20 +49,21 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.diary_item, parent, false);
 
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
     /**
      * Set element from mNotes at this position of RecyclerView
      */
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
+    public void onBindViewHolder(final ViewHolder holder, int p) {
+        int position = holder.getAdapterPosition();
+
         holder.mRootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {// start Details activity after clicking on card with content of selected note
                 Intent intent = new Intent(mContext, DetailNoteActivity.class);
-                intent.putExtra(Constants.EXTRA_NOTE_ID, mNotes.get(position).getId());
+                intent.putExtra(Constants.EXTRA_NOTE_ID, mNotes.get(holder.getAdapterPosition()).getId());
                 mContext.startActivity(intent);
             }
         });
@@ -78,9 +82,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         view.setBackground(gd);
 
         // Set up image if exists
-        if (mNotes.get(position).getImage() != null) {
+        ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
+        if (mNotes.get(position).getLocalImage() != null) {
             try {
-                ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
                 File imgFile = new File(mNotes.get(position).getLocalImage());
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
@@ -89,11 +93,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             } catch (Exception e) {
                 Log.d(TAG, "error image setting: " + e.getMessage());
             }
-
+        } else {
+            imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.background_card));
         }
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_date)).
-                setText(mNotes.get(position).getDate());
+                setText(DateUtils.convertDateToString(new Date(mNotes.get(position).getDate())));
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_content)).
                 setText(mNotes.get(position).getContent());

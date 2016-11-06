@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.helpers.DateUtils;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 
 import java.io.IOException;
@@ -119,7 +118,7 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     @OnClick(R.id.button_create)
     public void onClick(View view) {
         Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
-                DateUtils.convertDateToString(new Date()), getMoodFromSpinner());
+                new Date(), getMoodFromSpinner());
         presenter.saveNote(note, currentBitmap);
     }
 

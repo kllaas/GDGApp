@@ -1,4 +1,4 @@
-package com.alexey_klimchuk.gdgapp.helpers;
+package com.alexey_klimchuk.gdgapp.utils;
 
 import android.util.Log;
 

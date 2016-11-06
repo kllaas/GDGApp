@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,8 +25,10 @@ import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.edit_note.EditNoteActivity;
+import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.File;
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -84,12 +87,21 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        /*switch (item.getItemId()) {
-            case R.id.menu_delete:
-                mPresenter.deleteNote();
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                showDeleteDialog();
                 return true;
-        }*/
+        }
         return false;
+    }
+
+    private void showDeleteDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.MyAlertDialogStyle);
+        builder.setTitle("Delete note");
+        builder.setMessage("Are you sure?");
+        builder.setPositiveButton("Delete", mPresenter.getDeleteOnClick());
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
     }
 
     @Override
@@ -178,6 +190,6 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     private void setText(Note note) {
         noteName.setText(note.getName());
         noteContent.setText(note.getContent());
-        noteDate.setText(note.getDate());
+        noteDate.setText(DateUtils.convertDateToString(new Date(note.getDate())));
     }
 }

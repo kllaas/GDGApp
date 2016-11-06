@@ -45,7 +45,7 @@ public interface NotesDataSource {
 
     void deleteAllNotes();
 
-    void deleteNote(@NonNull String NoteId);
+    void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback);
 
     interface LoadNotesCallback {
 
@@ -56,7 +56,7 @@ public interface NotesDataSource {
 
     interface GetNoteCallback {
 
-        void onNoteLoaded(Note Note);
+        void onNoteLoaded(Note note);
 
         void onDataNotAvailable();
     }
@@ -64,6 +64,13 @@ public interface NotesDataSource {
     interface SaveNoteCallback {
 
         void onNoteSaved();
+
+        void onError();
+    }
+
+    interface DeleteNoteCallback {
+
+        void onNoteDeleted();
 
         void onError();
     }

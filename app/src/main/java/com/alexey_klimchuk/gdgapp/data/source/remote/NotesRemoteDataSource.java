@@ -17,14 +17,32 @@
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
 import android.graphics.Bitmap;
-import android.os.Handler;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -32,13 +50,11 @@ import java.util.Map;
  */
 public class NotesRemoteDataSource implements NotesDataSource {
 
-    private static final int SERVICE_LATENCY_IN_MILLIS = 0;
-    private final static Map<String, Note> NOTES_SERVICE_DATA;
     private static NotesRemoteDataSource INSTANCE;
-
-    static {
-        NOTES_SERVICE_DATA = new LinkedHashMap<>(2);
-    }
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private StorageReference storageRef = FirebaseStorage.getInstance()
+            .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
+    private DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
 
     // Prevent direct instantiation.
     private NotesRemoteDataSource() {
@@ -51,11 +67,6 @@ public class NotesRemoteDataSource implements NotesDataSource {
         return INSTANCE;
     }
 
-    /*private static void addNote(String title, String description) {
-        Note newNote = new Note(title, description);
-        NOTES_SERVICE_DATA.put(newNote.getId(), newNote);
-    }*/
-
     /**
      * Note: {@link LoadNotesCallback#onDataNotAvailable()} is never fired. In a real remote data
      * source implementation, this would be fired if the server can't be contacted or the server
@@ -63,14 +74,29 @@ public class NotesRemoteDataSource implements NotesDataSource {
      */
     @Override
     public void getNotes(final @NonNull LoadNotesCallback callback) {
-        // Simulate network by delaying the execution.
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                callback.onNotesLoaded(new ArrayList<Note>(NOTES_SERVICE_DATA.values()));
-            }
-        }, SERVICE_LATENCY_IN_MILLIS);
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER).
+                addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        try {
+                            GenericTypeIndicator<Map<String, Note>> t = new GenericTypeIndicator<Map<String, Note>>() {
+                            };
+                            Map<String, Note> notes = dataSnapshot.getValue(t);
+                            ArrayList list = new ArrayList<Note>(notes.values());
+                            Collections.sort(list, new CustomComparator());
+                            callback.onNotesLoaded(list);
+                        } catch (Exception e) {
+                            callback.onDataNotAvailable();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        callback.onDataNotAvailable();
+                    }
+                });
     }
 
     /**
@@ -80,32 +106,50 @@ public class NotesRemoteDataSource implements NotesDataSource {
      */
     @Override
     public void getNote(@NonNull String noteId, final @NonNull GetNoteCallback callback) {
-        final Note Note = NOTES_SERVICE_DATA.get(noteId);
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER)
+                .child(noteId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Note notes = dataSnapshot.getValue(Note.class);
+                        callback.onNoteLoaded(notes);
+                    }
 
-        // Simulate network by delaying the execution.
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                callback.onNoteLoaded(Note);
-            }
-        }, SERVICE_LATENCY_IN_MILLIS);
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        callback.onDataNotAvailable();
+                    }
+                });
     }
 
     @Override
-    public void saveNote(@NonNull Note note, Bitmap bitmap, SaveNoteCallback callback) {
-        NOTES_SERVICE_DATA.put(note.getId(), note);
-
-        if (callback != null)
-            callback.onNoteSaved();
+    public void saveNote(@NonNull final Note note, final Bitmap bitmap, final SaveNoteCallback callback) {
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER)
+                .child(note.getId())
+                .setValue(note)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            if (bitmap != null) {
+                                saveImage(bitmap, note.getId(), callback);
+                            } else {
+                                callback.onNoteSaved();
+                            }
+                        } else {
+                            callback.onError();
+                        }
+                    }
+                });
     }
 
     @Override
     public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
-        NOTES_SERVICE_DATA.remove(note.getId());
-        NOTES_SERVICE_DATA.put(note.getId(), note);
-        if (callback != null)
-            callback.onNoteSaved();
+
     }
 
 
@@ -117,11 +161,48 @@ public class NotesRemoteDataSource implements NotesDataSource {
 
     @Override
     public void deleteAllNotes() {
-        NOTES_SERVICE_DATA.clear();
     }
 
     @Override
-    public void deleteNote(@NonNull String NoteId) {
-        NOTES_SERVICE_DATA.remove(NoteId);
+    public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
+
+    }
+
+    private void saveImage(final Bitmap image, final String noteId, final SaveNoteCallback callback) {
+        StorageReference imageRef = storageRef.child((new Date()).getTime() + "space.jpg");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        UploadTask uploadTask = imageRef.putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                callback.onError();
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                String s = mAuth.getCurrentUser().getEmail().replaceAll("\\.", "");
+
+                mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                        .child(s)
+                        .child(Constants.Firebase.NOTES_FOLDER)
+                        .child(noteId)
+                        .child(Constants.Firebase.IMAGES_FOLDER)
+                        .setValue(downloadUrl.toString());
+
+                callback.onNoteSaved();
+            }
+        });
+    }
+
+    public class CustomComparator implements Comparator<Note> {
+        @Override
+        public int compare(Note o1, Note o2) {
+            return (new Date(o2.getDate())).compareTo(new Date(o1.getDate()));
+        }
     }
 }

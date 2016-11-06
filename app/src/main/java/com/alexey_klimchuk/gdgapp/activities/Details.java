@@ -1,38 +1,18 @@
 package com.alexey_klimchuk.gdgapp.activities;
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.alexey_klimchuk.gdgapp.R;
-import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.helpers.DatabaseHelper;
-import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
-
-import java.io.File;
 
 public class Details extends AppCompatActivity {
 
     private static final String TAG = "mDetails";
     private SQLiteDatabase sqLiteDatabase;
-    private DatabaseHelper databaseHelper;
+    //private DatabaseHelper databaseHelper;
     private TextView remindName;
     private TextView remindContent;
     private TextView remindDate;
@@ -40,7 +20,7 @@ public class Details extends AppCompatActivity {
     private View moodState;
     private Note mNote;
 
-    @Override
+   /* @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_details);
@@ -72,26 +52,26 @@ public class Details extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    /**
+    *//**
      * Start Activity to edit note.
      * Put in extras id of current note.
-     */
+     *//*
     private void editNote() {
         Intent intent = new Intent(Details.this, CreateNoteActivity.class);
         intent.putExtra("id", mNote.getId());
         startActivity(intent);
     }
 
-    /**
+    *//**
      * Set data from note object to views.
-     */
+     *//*
     private void fillViews() {
         Bundle extras = getIntent().getExtras();// Get id of Note from NotesActivity
         mNote = databaseHelper.getNoteById(sqLiteDatabase, extras.getString("id"));// Get note from db
 
         remindName.setText(mNote.getName());
         remindContent.setText(mNote.getContent());
-        remindDate.setText(mNote.getDate());
+        remindDate.setText();
 
         GradientDrawable gd = new GradientDrawable();// Set mood
         if (mNote.getMood() == Note.Mood.GOOD)
@@ -140,9 +120,9 @@ public class Details extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
+    *//**
      * Create dialog to delete note.
-     */
+     *//*
     private void createDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialogStyle);
         builder.setTitle("Delete note");
@@ -163,9 +143,9 @@ public class Details extends AppCompatActivity {
         builder.show();
     }
 
-    /**
+    *//**
      * Delete imageView file.
-     */
+     *//*
     private void deleteImageFile() {
         File imgFile = new File(mNote.getImage());
         if (imgFile.exists()) {
@@ -175,5 +155,5 @@ public class Details extends AppCompatActivity {
                 Log.d(TAG, "file was not deleted");
             }
         }
-    }
+    }*/
 }

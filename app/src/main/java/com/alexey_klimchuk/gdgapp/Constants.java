@@ -10,4 +10,11 @@ public class Constants {
     public static final String ARGUMENT_EDIT_NOTE_ID = "NOTE_EDIT_ID";
     public static String DB_URL = "https://gdgapp-2d5ae.firebaseio.com/";
 
+    public class Firebase {
+        public static final String USERS_DB_URL = "gs://gdgapp-2d5ae.appspot.com";
+        public static final String IMAGES_FOLDER = "images";
+        public static final String NOTES_FOLDER = "notes";
+        public static final String USERS_FOLDER = "users";
+        public static final String DATE_FIELD = "date";
+    }
 }

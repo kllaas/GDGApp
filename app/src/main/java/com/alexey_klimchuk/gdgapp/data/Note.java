@@ -1,5 +1,6 @@
 package com.alexey_klimchuk.gdgapp.data;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -11,43 +12,43 @@ public class Note {
     private String id = "";
     private String name = "";
     private String content = "";
-    private String date;
+    private long date;
     private String image = "";
     private String localImage = "";
     private Mood mMood;
 
-    public Note(String id, String name, String content, String date, String image, Mood mMood) {
+    public Note(String id, String name, String content, Date date, String image, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
-        this.date = date;
+        this.date = date.getTime();
         this.image = image;
         this.mMood = mMood;
     }
 
-    public Note(String name, String content, String date, Mood mMood) {
+    public Note(String name, String content, Date date, Mood mMood) {
         this.name = name;
         this.content = content;
-        this.date = date;
+        this.date = date.getTime();
         this.mMood = mMood;
     }
 
     public Note() {
     }
 
-    public Note(String name, String content, String date, String image, Mood mood) {
+    public Note(String name, String content, Date date, String image, Mood mood) {
         this.name = name;
         this.content = content;
-        this.date = date;
+        this.date = date.getTime();
         this.image = image;
         mMood = mood;
     }
 
-    public Note(String id, String name, String content, String date, String image, String localImage, Mood mMood) {
+    public Note(String id, String name, String content, Date date, String image, String localImage, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
-        this.date = date;
+        this.date = date.getTime();
         this.image = image;
         this.localImage = localImage;
         this.mMood = mMood;
@@ -97,11 +98,11 @@ public class Note {
         this.content = content;
     }
 
-    public String getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
