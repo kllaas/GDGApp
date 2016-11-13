@@ -57,5 +57,10 @@
         app:layout_anchorGravity="bottom|right|end"
         app:rippleColor="#ecd245" />
 
+    <FrameLayout
+        android:id="@+id/image_show_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
 </android.support.design.widget.CoordinatorLayout>

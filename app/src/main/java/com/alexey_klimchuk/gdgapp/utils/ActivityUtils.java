@@ -21,6 +21,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 
+import com.alexey_klimchuk.gdgapp.R;
+
 /**
  * This provides methods to help Activities load their UI.
  */
@@ -31,9 +33,19 @@ public class ActivityUtils {
      * performed by the {@code fragmentManager}.
      */
     public static void addFragmentToActivity(@NonNull FragmentManager fragmentManager,
-                                             @NonNull Fragment fragment, int frameId) {
+                                             @NonNull Fragment fragment, int frameId, boolean shouldAnimate) {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(frameId, fragment);
+        if (shouldAnimate)
+            transaction.setCustomAnimations(R.anim.slide_in, R.anim.slide_out);
+        transaction.replace(frameId, fragment);
+        transaction.commit();
+    }
+
+    public static void removeFragment(@NonNull FragmentManager fragmentManager,
+                                      @NonNull Fragment fragment) {
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setCustomAnimations(R.anim.slide_in, R.anim.slide_out);
+        transaction.remove(fragment);
         transaction.commit();
     }
 

@@ -87,8 +87,12 @@ public class NotesRepository implements NotesDataSource {
         INSTANCE = null;
     }
 
-    public static List<Note> getCachedNotes() {
+    public static List<Note> getCachedNotesList() {
         return new ArrayList<>(mCachedNotes.values());
+    }
+
+    public static Map<String, Note> getCachedNotesMap() {
+        return mCachedNotes;
     }
 
     /**
