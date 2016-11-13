@@ -34,4 +34,8 @@ public class CacheUtils {
         return mMemoryCache.get(key);
     }
 
+    public static void removeBitmapFromMemCache(String key) {
+        mMemoryCache.remove(key);
+    }
+
 }

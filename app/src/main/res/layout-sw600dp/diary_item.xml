@@ -39,6 +39,7 @@
             android:layout_marginTop="@dimen/large_margin"
             android:layout_toEndOf="@id/mood_icon"
             android:layout_toStartOf="@+id/text_view_date"
+            android:maxLines="2"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/medium_text_size" />
 

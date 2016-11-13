@@ -26,6 +26,7 @@ import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -186,6 +187,8 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         if (image != null) {
             values.put(NoteEntry.IMAGE_LOCAL_COLUMN, note.getLocalImage());
+            //to use new image in RecyclerView
+            CacheUtils.removeBitmapFromMemCache(note.getId());
         }
 
         db.update(NoteEntry.TABLE_NAME, values, NoteEntry.COLUMN_NAME_ENTRY_ID + " = ?",
