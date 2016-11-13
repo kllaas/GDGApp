@@ -22,6 +22,7 @@ import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.detail_note.DetailNoteActivity;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.File;
@@ -92,7 +93,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         final ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
         setImage(position, imageView);
 
-
         ((TextView) holder.mRootView.findViewById(R.id.text_view_date)).
                 setText(DateUtils.convertDateToString(new Date(mNotes.get(position).getDate())));
 
@@ -108,10 +108,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     private void setImage(int position, final ImageView imageView) {
         try {
             if (!mNotes.get(position).getLocalImage().equals("")) {
-                imageView.setImageBitmap(null);
-                File imgFile = new File(mNotes.get(position).getLocalImage());
-                if (imgFile.exists()) {
-                    new imageResizer(Uri.fromFile((imgFile)), imageView).execute();
+                if ((CacheUtils.getBitmapFromMemCache(mNotes.get(position).getId()) == null)) {
+                    imageView.setImageBitmap(null);
+                    File imgFile = new File(mNotes.get(position).getLocalImage());
+                    if (imgFile.exists()) {
+                        new imageResizer(Uri.fromFile((imgFile)), imageView, position).execute();
+                    }
+                } else {
+                    imageView.setImageBitmap(CacheUtils.getBitmapFromMemCache(mNotes.get(position).getId()));
                 }
             } else {
                 setDefaultImage(imageView);
@@ -150,10 +154,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
         private Uri uri;
         private ImageView imageView;
+        private int position;
 
-        imageResizer(Uri uri, ImageView imageView) {
+        imageResizer(Uri uri, ImageView imageView, int pos) {
             this.uri = uri;
             this.imageView = imageView;
+            position = pos;
         }
 
         @Override
@@ -164,6 +170,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+
+            CacheUtils.addBitmapToMemoryCache(mNotes.get(position).getId(), bitmap);
 
             return bitmap;
         }
