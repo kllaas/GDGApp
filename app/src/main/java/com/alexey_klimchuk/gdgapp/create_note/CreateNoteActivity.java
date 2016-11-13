@@ -18,6 +18,8 @@ import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.IOException;
 import java.util.Date;
@@ -99,15 +101,25 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri selectedImageUri = data.getData();
-            try {
-                currentBitmap = BitmapUtils.resizeImage(CreateNoteActivity.this, selectedImageUri);
-                ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
+            CropImage.activity(selectedImageUri)
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .start(this);
+        }
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                try {
+                    currentBitmap = BitmapUtils.resizeImage(CreateNoteActivity.this, result.getUri(), 600);
+                    ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
 
-                // clear drawing cache
-                imageView.setDrawingCacheEnabled(false);
-                imageView.setImageBitmap(currentBitmap);
-            } catch (IOException e) {
-                Toast.makeText(CreateNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    // clear drawing cache
+                    imageView.setDrawingCacheEnabled(false);
+                    imageView.setImageBitmap(currentBitmap);
+                } catch (IOException e) {
+                    Toast.makeText(CreateNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
             }
         }
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.alexey_klimchuk.gdgapp.R;
-import com.alexey_klimchuk.gdgapp.adapter.RecyclerAdapter;
 import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -25,6 +25,8 @@ import butterknife.ButterKnife;
 
 public class NotesActivity extends AppCompatActivity implements NotesRelations.View {
 
+    private static Bundle mBundleRecyclerViewState;
+    private final String KEY_RECYCLER_STATE = "recycler_state";
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
 
@@ -34,6 +36,7 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
     private RecyclerView.LayoutManager mLayoutManager;
 
     private ProgressDialog mProgressDialog;
+    private Parcelable mListState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,27 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        // save RecyclerView state
+        mBundleRecyclerViewState = new Bundle();
+        Parcelable listState = mRecyclerView.getLayoutManager().onSaveInstanceState();
+        mBundleRecyclerViewState.putParcelable(KEY_RECYCLER_STATE, listState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // restore RecyclerView state
+        if (mBundleRecyclerViewState != null) {
+            Parcelable listState = mBundleRecyclerViewState.getParcelable(KEY_RECYCLER_STATE);
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -87,7 +111,7 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
 
     @Override
     public void refreshData(List<Note> notes) {
-        mAdapter = new RecyclerAdapter(notes, NotesActivity.this);
+        mAdapter = mPresenter.loadAdapter(notes);
         mRecyclerView.setAdapter(mAdapter);
     }
 

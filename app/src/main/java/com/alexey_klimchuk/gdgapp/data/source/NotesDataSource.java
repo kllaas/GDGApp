@@ -54,6 +54,13 @@ public interface NotesDataSource {
         void onDataNotAvailable();
     }
 
+    interface LoadImageCallback {
+
+        void onImageLoaded(Note note, Bitmap bitmap);
+
+        void onImageNotAvailable();
+    }
+
     interface GetNoteCallback {
 
         void onNoteLoaded(Note note);

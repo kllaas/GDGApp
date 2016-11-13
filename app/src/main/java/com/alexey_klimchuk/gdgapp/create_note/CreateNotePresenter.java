@@ -26,7 +26,7 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     public CreateNotePresenter(CreateNoteActivity activity) {
         mView = activity;
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
-                NotesRemoteDataSource.getInstance());
+                NotesRemoteDataSource.getInstance(), mView.getActivity());
     }
 
     @Override

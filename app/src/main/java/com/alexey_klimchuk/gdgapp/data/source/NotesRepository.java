@@ -16,15 +16,18 @@
 
 package com.alexey_klimchuk.gdgapp.data.source;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,23 +46,23 @@ public class NotesRepository implements NotesDataSource {
     private final NotesDataSource mNotesRemoteDataSource;
 
     private final NotesDataSource mNotesLocalDataSource;
-
     /**
      * This variable has package local visibility so it can be accessed from tests.
      */
     Map<String, Note> mCachedNotes;
-
     /**
      * Marks the cache as invalid, to force an update the next time data is requested. This variable
      * has package local visibility so it can be accessed from tests.
      */
     boolean mCacheIsDirty = false;
+    private Context context;
 
     // Prevent direct instantiation.
     private NotesRepository(@NonNull NotesDataSource notesRemoteDataSource,
-                            @NonNull NotesDataSource notesLocalDataSource) {
+                            @NonNull NotesDataSource notesLocalDataSource, Context context) {
         mNotesRemoteDataSource = notesRemoteDataSource;
         mNotesLocalDataSource = notesLocalDataSource;
+        this.context = context;
     }
 
     /**
@@ -70,15 +73,15 @@ public class NotesRepository implements NotesDataSource {
      * @return the {@link NotesRepository} instance
      */
     public static NotesRepository getInstance(NotesDataSource notesRemoteDataSource,
-                                              NotesDataSource notesLocalDataSource) {
+                                              NotesDataSource notesLocalDataSource, Context context) {
         if (INSTANCE == null) {
-            INSTANCE = new NotesRepository(notesRemoteDataSource, notesLocalDataSource);
+            INSTANCE = new NotesRepository(notesRemoteDataSource, notesLocalDataSource, context);
         }
         return INSTANCE;
     }
 
     /**
-     * Used to force {@link #getInstance(NotesDataSource, NotesDataSource)} to create a new instance
+     * Used to force {@link #getInstance(NotesDataSource, NotesDataSource, Context)} to create a new instance
      * next time it's called.
      */
     public static void destroyInstance() {
@@ -101,50 +104,43 @@ public class NotesRepository implements NotesDataSource {
             return;
         }
 
-        if (mCacheIsDirty || mCachedNotes == null) {
-            // If the cache is dirty we need to fetch new data from the network.
-            getNotesFromRemoteDataSource(callback);
-        }
+        // Query the local storage if available. If not, query the network.
+        mNotesLocalDataSource.getNotes(new LoadNotesCallback() {
+            @Override
+            public void onNotesLoaded(List<Note> notes) {
+                Collections.sort(notes, new CustomComparator());
+                refreshCache(notes);
+                callback.onNotesLoaded(notes);
+            }
 
-        if (mCachedNotes != null && !mCacheIsDirty) {
-            // Query the local storage if available. If not, query the network.
-            mNotesLocalDataSource.getNotes(new LoadNotesCallback() {
-                @Override
-                public void onNotesLoaded(List<Note> notes) {
-                    refreshCache(notes);
-                    callback.onNotesLoaded(notes);
-                }
+            @Override
+            public void onDataNotAvailable() {
+                callback.onDataNotAvailable();
+            }
+        });
 
-                @Override
-                public void onDataNotAvailable() {
-                    getNotesFromRemoteDataSource(callback);
-                }
-            });
-        }
+
     }
 
     @Override
     public void saveNote(@NonNull final Note note, final Bitmap image,
                          final SaveNoteCallback callback) {
-        mNotesRemoteDataSource.saveNote(note, image, new SaveNoteCallback() {
-            @Override
-            public void onNoteSaved() {
-                // Do in memory cache update to keep the app UI up to date
-                if (mCachedNotes == null) {
-                    mCachedNotes = new LinkedHashMap<>();
-                }
-                ArrayList<Note> notes = new ArrayList<Note>(mCachedNotes.values());
-                notes.add(0, note);
-                refreshCache(notes);
-
-                mNotesLocalDataSource.saveNote(note, image, callback);
+        if (image != null) {
+            try {
+                BitmapUtils.deleteImageFile(note.getLocalImage());
+                note.setLocalImage(BitmapUtils.createImageFile(image, true));
+            } catch (Exception ignored) {
             }
+        }
 
-            @Override
-            public void onError() {
-                callback.onError();
-            }
-        });
+        if (mCachedNotes == null) {
+            mCachedNotes = new LinkedHashMap<>();
+        }
+        ArrayList<Note> notes = new ArrayList<Note>(mCachedNotes.values());
+        notes.add(0, note);
+        refreshCache(notes);
+
+        mNotesLocalDataSource.saveNote(note, image, callback);
     }
 
     @Override
@@ -152,13 +148,12 @@ public class NotesRepository implements NotesDataSource {
         if (image != null) {
             try {
                 BitmapUtils.deleteImageFile(note.getLocalImage());
-                note.setLocalImage(BitmapUtils.createImageFile(image));
+                note.setLocalImage(BitmapUtils.createImageFile(image, false));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        mNotesRemoteDataSource.editNote(note, image, callback);
         mNotesLocalDataSource.editNote(note, image, callback);
 
         // Do in memory cache update to keep the app UI up to date
@@ -166,6 +161,7 @@ public class NotesRepository implements NotesDataSource {
             mCachedNotes = new LinkedHashMap<>();
         }
         mCachedNotes.put(note.getId(), note);
+        callback.onNoteSaved();
     }
 
     /**
@@ -178,7 +174,7 @@ public class NotesRepository implements NotesDataSource {
     @Override
     public void getNote(@NonNull final String noteId, @NonNull final GetNoteCallback callback) {
 
-        Note cachedNote = getNoteWithId(noteId);
+        final Note cachedNote = getNoteWithId(noteId);
 
         // Respond immediately with cache if available
         if (cachedNote != null) {
@@ -197,17 +193,7 @@ public class NotesRepository implements NotesDataSource {
 
             @Override
             public void onDataNotAvailable() {
-                mNotesRemoteDataSource.getNote(noteId, new GetNoteCallback() {
-                    @Override
-                    public void onNoteLoaded(Note note) {
-                        callback.onNoteLoaded(note);
-                    }
-
-                    @Override
-                    public void onDataNotAvailable() {
-                        callback.onDataNotAvailable();
-                    }
-                });
+                callback.onDataNotAvailable();
             }
         });
     }
@@ -230,7 +216,6 @@ public class NotesRepository implements NotesDataSource {
 
     @Override
     public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
-        mNotesRemoteDataSource.deleteNote(NoteId, callback);
         mNotesLocalDataSource.deleteNote(NoteId, callback);
 
         if (mCachedNotes == null) {

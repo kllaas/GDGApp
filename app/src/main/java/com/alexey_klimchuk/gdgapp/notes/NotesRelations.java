@@ -1,6 +1,7 @@
 package com.alexey_klimchuk.gdgapp.notes;
 
 import android.app.Activity;
+import android.support.v7.widget.RecyclerView;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -27,6 +28,7 @@ public class NotesRelations {
 
         void loadNotes();
 
+        RecyclerView.Adapter loadAdapter(List<Note> notes);
     }
 
 }

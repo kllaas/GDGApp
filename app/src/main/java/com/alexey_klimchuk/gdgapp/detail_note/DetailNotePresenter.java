@@ -26,7 +26,7 @@ public class DetailNotePresenter implements DetailNoteRelations.Presenter {
     public DetailNotePresenter(DetailNoteRelations.View view) {
         mView = view;
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(mView.getActivity()),
-                NotesRemoteDataSource.getInstance());
+                NotesRemoteDataSource.getInstance(), mView.getActivity());
     }
 
     @Override

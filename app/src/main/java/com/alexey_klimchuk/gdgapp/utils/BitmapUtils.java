@@ -24,14 +24,14 @@ public class BitmapUtils {
     /**
      * Resizing image from gallery to increase performance.
      */
-    public static Bitmap resizeImage(Context c, Uri uri)
+    public static Bitmap resizeImage(Context c, Uri uri, int size)
             throws FileNotFoundException {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, options);
 
         BitmapFactory.Options finalOptions = new BitmapFactory.Options();
-        finalOptions.inSampleSize = calculateInSampleSize(options, 240, 240);
+        finalOptions.inSampleSize = calculateInSampleSize(options, size, size);
         return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, finalOptions);
     }
 
@@ -60,7 +60,7 @@ public class BitmapUtils {
     /**
      * Creating image file.
      */
-    public static String createImageFile(Bitmap bmp) throws IOException {
+    public static String createImageFile(Bitmap bmp, boolean shouldRecycle) throws IOException {
         String extr = Environment.getExternalStorageDirectory().toString();
         File mFolder = new File(extr + "/DiaryImages");
         if (!mFolder.exists()) {
@@ -71,7 +71,8 @@ public class BitmapUtils {
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
         fos.flush();
         fos.close();
-        bmp.recycle();
+        if (shouldRecycle)
+            bmp.recycle();
         return f.getAbsolutePath();
     }
 

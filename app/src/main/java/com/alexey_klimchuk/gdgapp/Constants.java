@@ -12,7 +12,7 @@ public class Constants {
 
     public class Firebase {
         public static final String USERS_DB_URL = "gs://gdgapp-2d5ae.appspot.com";
-        public static final String IMAGES_FOLDER = "images";
+        public static final String IMAGES_FOLDER = "image";
         public static final String NOTES_FOLDER = "notes";
         public static final String USERS_FOLDER = "users";
         public static final String DATE_FIELD = "date";

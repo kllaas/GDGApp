@@ -22,16 +22,19 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
 
     private NotesRepository mNotesRepository;
     private String noteId;
+    private Note mNote;
 
     public EditNotePresenter(EditNoteActivity activity) {
         mView = activity;
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
-                NotesRemoteDataSource.getInstance());
+                NotesRemoteDataSource.getInstance(), mView.getActivity());
     }
 
     @Override
     public void updateNote(final Note note, final Bitmap image) {
         mView.showProgressDialog();
+        note.setLocalImage(mNote.getLocalImage());
+        note.setImage(mNote.getImage());
         note.setId(noteId);
         mNotesRepository.editNote(note, image, new NotesDataSource.SaveNoteCallback() {
             @Override
@@ -60,6 +63,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
         mNotesRepository.getNote(noteId, new NotesDataSource.GetNoteCallback() {
             @Override
             public void onNoteLoaded(Note note) {
+                mNote = note;
                 mView.updateViews(note);
                 mView.hideProgressDialog();
             }

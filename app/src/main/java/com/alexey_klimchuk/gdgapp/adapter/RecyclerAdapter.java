@@ -3,24 +3,29 @@ package com.alexey_klimchuk.gdgapp.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
+import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.detail_note.DetailNoteActivity;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 
@@ -33,10 +38,12 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     private static final String TAG = "mRecyclerAdapter";
     private List<Note> mNotes;
     private Context mContext;
+    private NotesRepository mRepository;
 
-    public RecyclerAdapter(List<Note> notes, Context context) {
+    public RecyclerAdapter(List<Note> notes, Context context, NotesRepository repository) {
         mNotes = notes;
         mContext = context;
+        mRepository = repository;
     }
 
     /**
@@ -81,21 +88,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         View view = holder.mRootView.findViewById(R.id.mood_icon);
         view.setBackground(gd);
 
-        // Set up image if exists
-        ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
-        if (mNotes.get(position).getLocalImage() != null) {
-            try {
-                File imgFile = new File(mNotes.get(position).getLocalImage());
-                if (imgFile.exists()) {
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    imageView.setImageBitmap(myBitmap);
-                }
-            } catch (Exception e) {
-                Log.d(TAG, "error image setting: " + e.getMessage());
-            }
-        } else {
-            imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.background_card));
-        }
+        // Set up image part
+        final ImageView imageView = (ImageView) holder.mRootView.findViewById(R.id.image_view_item);
+        setImage(position, imageView);
+
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_date)).
                 setText(DateUtils.convertDateToString(new Date(mNotes.get(position).getDate())));
@@ -103,9 +99,30 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         ((TextView) holder.mRootView.findViewById(R.id.text_view_content)).
                 setText(mNotes.get(position).getContent());
 
-        ((TextView) holder.mRootView.findViewById(R.id.text_view_name)).
-                setText(mNotes.get(position).getName());
+        ((TextView) holder.mRootView.findViewById(R.id.text_view_name))
+                .setText(mNotes.get(position).getName());
 
+    }
+
+
+    private void setImage(int position, final ImageView imageView) {
+        try {
+            if (!mNotes.get(position).getLocalImage().equals("")) {
+                imageView.setImageBitmap(null);
+                File imgFile = new File(mNotes.get(position).getLocalImage());
+                if (imgFile.exists()) {
+                    new imageResizer(Uri.fromFile((imgFile)), imageView).execute();
+                }
+            } else {
+                setDefaultImage(imageView);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "error image setting: " + e.getMessage());
+        }
+    }
+
+    private void setDefaultImage(ImageView imageView) {
+        imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.background_card));
     }
 
     /**
@@ -117,8 +134,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     }
 
     // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
+// Complex data items may need more than one view per item, and
+// you provide access to all the views for a data item in a view holder
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         public View mRootView;
@@ -126,6 +143,40 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         public ViewHolder(View v) {
             super(v);
             mRootView = v;
+        }
+    }
+
+    private class imageResizer extends AsyncTask<Void, Void, Bitmap> {
+
+        private Uri uri;
+        private ImageView imageView;
+
+        imageResizer(Uri uri, ImageView imageView) {
+            this.uri = uri;
+            this.imageView = imageView;
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            Bitmap bitmap = null;
+            try {
+                bitmap = BitmapUtils.resizeImage(mContext, uri, 240);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (bitmap != null) {
+                AlphaAnimation animation = new AlphaAnimation(0f, 1);
+                animation.setDuration(400);
+                imageView.startAnimation(animation);
+                imageView.setImageBitmap(bitmap);
+            }
+            super.onPostExecute(bitmap);
         }
     }
 }

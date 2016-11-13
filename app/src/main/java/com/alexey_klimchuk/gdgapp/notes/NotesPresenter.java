@@ -1,6 +1,9 @@
 package com.alexey_klimchuk.gdgapp.notes;
 
+import android.support.v7.widget.RecyclerView;
+
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.adapter.RecyclerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
@@ -23,7 +26,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
     public NotesPresenter(NotesRelations.View view) {
         mView = view;
         mNotesRepository = NotesRepository.getInstance(NotesRemoteDataSource.getInstance(),
-                NotesLocalDataSource.getInstance(mView.getActivity()));
+                NotesLocalDataSource.getInstance(mView.getActivity()), mView.getActivity());
     }
 
     @Override
@@ -43,5 +46,10 @@ public class NotesPresenter implements NotesRelations.Presenter {
                 ToastUtils.showMessage(R.string.message_loading_failed, mView.getActivity());
             }
         });
+    }
+
+    @Override
+    public RecyclerView.Adapter loadAdapter(List<Note> notes) {
+        return new RecyclerAdapter(notes, mView.getActivity(), mNotesRepository);
     }
 }

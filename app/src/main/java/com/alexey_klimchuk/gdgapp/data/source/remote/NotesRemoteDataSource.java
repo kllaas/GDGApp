@@ -17,12 +17,16 @@
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -39,10 +43,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -65,6 +68,33 @@ public class NotesRemoteDataSource implements NotesDataSource {
             INSTANCE = new NotesRemoteDataSource();
         }
         return INSTANCE;
+    }
+
+    public static void loadImage(final Note note, final LoadImageCallback imageLoadedListener) {
+        final long ONE_MEGABYTE = 1024 * 1024;
+        StorageReference storageRef = FirebaseStorage.getInstance()
+                .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
+
+        StorageReference imagesRef = storageRef.child(note.getId() + ".jpg");
+        imagesRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                try {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    note.setLocalImage(BitmapUtils.createImageFile(bmp, false));
+                    imageLoadedListener.onImageLoaded(note, bmp);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    imageLoadedListener.onImageNotAvailable();
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.d("Loading image: ", exception.getMessage());
+                imageLoadedListener.onImageNotAvailable();
+            }
+        });
     }
 
     /**
@@ -169,7 +199,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     private void saveImage(final Bitmap image, final String noteId, final SaveNoteCallback callback) {
-        StorageReference imageRef = storageRef.child((new Date()).getTime() + "space.jpg");
+        StorageReference imageRef = storageRef.child(noteId + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -197,12 +227,5 @@ public class NotesRemoteDataSource implements NotesDataSource {
                 callback.onNoteSaved();
             }
         });
-    }
-
-    public class CustomComparator implements Comparator<Note> {
-        @Override
-        public int compare(Note o1, Note o2) {
-            return (new Date(o2.getDate())).compareTo(new Date(o1.getDate()));
-        }
     }
 }
