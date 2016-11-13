@@ -28,6 +28,7 @@ import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,15 +42,13 @@ import java.util.Map;
  */
 public class NotesRepository implements NotesDataSource {
 
-    private static NotesRepository INSTANCE = null;
-
-    private final NotesDataSource mNotesRemoteDataSource;
-
-    private final NotesDataSource mNotesLocalDataSource;
     /**
      * This variable has package local visibility so it can be accessed from tests.
      */
-    Map<String, Note> mCachedNotes;
+    static Map<String, Note> mCachedNotes;
+    private static NotesRepository INSTANCE = null;
+    private final NotesDataSource mNotesRemoteDataSource;
+    private final NotesDataSource mNotesLocalDataSource;
     /**
      * Marks the cache as invalid, to force an update the next time data is requested. This variable
      * has package local visibility so it can be accessed from tests.
@@ -88,6 +87,10 @@ public class NotesRepository implements NotesDataSource {
         INSTANCE = null;
     }
 
+    public static List<Note> getCachedNotes() {
+        return new ArrayList<>(mCachedNotes.values());
+    }
+
     /**
      * Gets Notes from cache, local data source (SQLite) or remote data source, whichever is
      * available first.
@@ -118,8 +121,6 @@ public class NotesRepository implements NotesDataSource {
                 callback.onDataNotAvailable();
             }
         });
-
-
     }
 
     @Override
@@ -223,6 +224,22 @@ public class NotesRepository implements NotesDataSource {
         } else {
             mCachedNotes.remove(NoteId);
         }
+    }
+
+    @Override
+    public void getNotesByDate(Date date, final LoadNotesCallback callback) {
+        mNotesLocalDataSource.getNotesByDate(date, new LoadNotesCallback() {
+            @Override
+            public void onNotesLoaded(List<Note> notes) {
+                Collections.sort(notes, new CustomComparator());
+                callback.onNotesLoaded(notes);
+            }
+
+            @Override
+            public void onDataNotAvailable() {
+                callback.onDataNotAvailable();
+            }
+        });
     }
 
     private void getNotesFromRemoteDataSource(@NonNull final LoadNotesCallback callback) {

@@ -1,16 +1,17 @@
 package com.alexey_klimchuk.gdgapp.notes;
 
+import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.RecyclerView;
 
-import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.RecyclerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
-import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,12 +39,14 @@ public class NotesPresenter implements NotesRelations.Presenter {
             public void onNotesLoaded(List<Note> notes) {
                 mView.refreshData(notes);
                 mView.hideProgressDialog();
+                mView.showEmptyListMessage(false);
             }
 
             @Override
             public void onDataNotAvailable() {
                 mView.hideProgressDialog();
-                ToastUtils.showMessage(R.string.message_loading_failed, mView.getActivity());
+                mView.refreshData(new ArrayList<Note>());
+                mView.showEmptyListMessage(true);
             }
         });
     }
@@ -51,5 +54,31 @@ public class NotesPresenter implements NotesRelations.Presenter {
     @Override
     public RecyclerView.Adapter loadAdapter(List<Note> notes) {
         return new RecyclerAdapter(notes, mView.getActivity(), mNotesRepository);
+    }
+
+    @Override
+    public void crateSearchDialog() {
+        DialogFragment dialog = new SearchDialogFragmetn();
+        dialog.show(mView.getActivity().getSupportFragmentManager(), "SearchDialogFragment");
+    }
+
+    @Override
+    public void searchByDate(Date date) {
+        mView.showProgressDialog();
+        mNotesRepository.getNotesByDate(date, new NotesDataSource.LoadNotesCallback() {
+            @Override
+            public void onNotesLoaded(List<Note> notes) {
+                mView.refreshData(notes);
+                mView.hideProgressDialog();
+                mView.showEmptyListMessage(false);
+            }
+
+            @Override
+            public void onDataNotAvailable() {
+                mView.hideProgressDialog();
+                mView.refreshData(new ArrayList<Note>());
+                mView.showEmptyListMessage(true);
+            }
+        });
     }
 }

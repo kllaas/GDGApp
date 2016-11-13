@@ -21,6 +21,7 @@ import android.support.annotation.NonNull;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -46,6 +47,8 @@ public interface NotesDataSource {
     void deleteAllNotes();
 
     void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback);
+
+    void getNotesByDate(Date date, LoadNotesCallback loadNotesCallback);
 
     interface LoadNotesCallback {
 

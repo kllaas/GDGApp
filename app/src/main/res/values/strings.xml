@@ -26,6 +26,10 @@
     <string name="message_registration_failed">Registration was failed.</string>
     <string name="message_pass_not_conf">Passwords dont confirm.</string>
     <string name="message_loading_failed">Sorry, loading was failed.</string>
+    <string name="search">Search</string>
+    <string name="cancel">Cancel</string>
+    <string name="should_select_date_message">Pleace, select date to search</string>
+    <string name="there_is_no_available_data">There is no available data =(</string>
     <string-array name="mood_variants">
         <item>Good</item>
         <item>Normal</item>

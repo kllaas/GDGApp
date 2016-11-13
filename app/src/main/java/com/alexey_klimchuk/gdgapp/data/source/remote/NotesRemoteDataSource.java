@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -195,6 +196,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
 
     @Override
     public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
+
+    }
+
+    @Override
+    public void getNotesByDate(Date date, LoadNotesCallback loadNotesCallback) {
 
     }
 

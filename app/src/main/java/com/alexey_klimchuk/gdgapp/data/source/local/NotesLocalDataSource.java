@@ -22,11 +22,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
+import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,7 +62,7 @@ public class NotesLocalDataSource implements NotesDataSource {
      */
     @Override
     public void getNotes(@NonNull LoadNotesCallback callback) {
-        List<Note> Notes = new ArrayList<Note>();
+        List<Note> notes = new ArrayList<Note>();
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         db.beginTransaction();
 
@@ -79,7 +79,6 @@ public class NotesLocalDataSource implements NotesDataSource {
         Cursor c = db.query(
                 NoteEntry.TABLE_NAME, projection, null, null, null, null, null);
 
-        int i = 0;
         if (c != null && c.getCount() > 0) {
             while (c.moveToNext()) {
                 String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
@@ -96,12 +95,10 @@ public class NotesLocalDataSource implements NotesDataSource {
                         Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
                 Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), image, mood);
                 note.setLocalImage(imageLocal == null ? "" : imageLocal);
-                Notes.add(note);
-                i++;
+                notes.add(note);
             }
         }
 
-        Log.d("LocalDataStorage", "loaded notes = " + i);
         if (c != null) {
             c.close();
         }
@@ -109,13 +106,11 @@ public class NotesLocalDataSource implements NotesDataSource {
         db.endTransaction();
         db.close();
 
-        if (Notes.isEmpty()) {
-            // This will be called if the table is new or just empty.
+        if (notes.isEmpty()) {
             callback.onDataNotAvailable();
         } else {
-            callback.onNotesLoaded(Notes);
+            callback.onNotesLoaded(notes);
         }
-
     }
 
     /**
@@ -249,5 +244,62 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         db.close();
         callback.onNoteDeleted();
+    }
+
+    @Override
+    public void getNotesByDate(Date searchDate, LoadNotesCallback callback) {
+        List<Note> notes = new ArrayList<Note>();
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        db.beginTransaction();
+
+        String[] projection = {
+                NoteEntry.IMAGE_LOCAL_COLUMN,
+                NoteEntry.COLUMN_NAME_ENTRY_ID,
+                NoteEntry.NAME_COLUMN,
+                NoteEntry.CONTENT_COLUMN,
+                NoteEntry.IMAGE_COLUMN,
+                NoteEntry.DATE_COLUMN,
+                NoteEntry.MOOD_COLUMN
+        };
+
+        String selection = NoteEntry.DATE_COLUMN + " > ? AND " + NoteEntry.DATE_COLUMN + " < ?";
+        String[] selectionArgs = {DateUtils.getStartDayDate(searchDate), DateUtils.getEndDayDate(searchDate)};
+
+        Cursor c = db.query(
+                NoteEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+
+        Date d = new Date(Long.valueOf(selectionArgs[1]));
+        if (c != null && c.getCount() > 0) {
+            while (c.moveToNext()) {
+                String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
+                String name = c.getString(c.getColumnIndexOrThrow(NoteEntry.NAME_COLUMN));
+                String content =
+                        c.getString(c.getColumnIndexOrThrow(NoteEntry.CONTENT_COLUMN));
+                String image =
+                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_COLUMN));
+                String imageLocal =
+                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_LOCAL_COLUMN));
+                String date =
+                        c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
+                Note.Mood mood =
+                        Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
+                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), image, mood);
+                note.setLocalImage(imageLocal == null ? "" : imageLocal);
+                notes.add(note);
+            }
+        }
+
+        if (c != null) {
+            c.close();
+        }
+
+        db.endTransaction();
+        db.close();
+
+        if (notes.isEmpty()) {
+            callback.onDataNotAvailable();
+        } else {
+            callback.onNotesLoaded(notes);
+        }
     }
 }

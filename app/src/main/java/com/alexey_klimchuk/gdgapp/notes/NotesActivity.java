@@ -1,6 +1,5 @@
 package com.alexey_klimchuk.gdgapp.notes;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,22 +12,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
 
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NotesActivity extends AppCompatActivity implements NotesRelations.View {
+public class NotesActivity extends AppCompatActivity implements NotesRelations.View, SearchDialogFragmetn.SearchDialogListener {
 
     private static Bundle mBundleRecyclerViewState;
     private final String KEY_RECYCLER_STATE = "recycler_state";
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
+    @BindView(R.id.no_data_container)
+    RelativeLayout mNoDataView;
 
     private NotesRelations.Presenter mPresenter;
 
@@ -36,7 +39,6 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
     private RecyclerView.LayoutManager mLayoutManager;
 
     private ProgressDialog mProgressDialog;
-    private Parcelable mListState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,27 +69,6 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-
-        // save RecyclerView state
-        mBundleRecyclerViewState = new Bundle();
-        Parcelable listState = mRecyclerView.getLayoutManager().onSaveInstanceState();
-        mBundleRecyclerViewState.putParcelable(KEY_RECYCLER_STATE, listState);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // restore RecyclerView state
-        if (mBundleRecyclerViewState != null) {
-            Parcelable listState = mBundleRecyclerViewState.getParcelable(KEY_RECYCLER_STATE);
-            mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -103,6 +84,7 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_search) {
+            mPresenter.crateSearchDialog();
             return true;
         }
 
@@ -130,7 +112,40 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
     }
 
     @Override
-    public Activity getActivity() {
+    public AppCompatActivity getActivity() {
         return this;
     }
+
+    @Override
+    public void showEmptyListMessage(boolean visible) {
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        mNoDataView.setVisibility(visibility);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // save RecyclerView state
+        mBundleRecyclerViewState = new Bundle();
+        Parcelable listState = mRecyclerView.getLayoutManager().onSaveInstanceState();
+        mBundleRecyclerViewState.putParcelable(KEY_RECYCLER_STATE, listState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // restore RecyclerView state
+        if (mBundleRecyclerViewState != null) {
+            Parcelable listState = mBundleRecyclerViewState.getParcelable(KEY_RECYCLER_STATE);
+            mRecyclerView.getLayoutManager().onRestoreInstanceState(listState);
+        }
+    }
+
+    @Override
+    public void onDialogPositiveClick(Date date) {
+        mPresenter.searchByDate(date);
+    }
+
 }
