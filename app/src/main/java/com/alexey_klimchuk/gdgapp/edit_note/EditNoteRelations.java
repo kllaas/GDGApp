@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
+import java.util.HashSet;
+
 /**
  * Created by Alexey on 24.09.2016.
  */
@@ -33,6 +35,10 @@ public class EditNoteRelations {
         void updateNote(Note note, Bitmap image);
 
         void loadNote(String id);
+
+        void addImage(Bitmap bitmap);
+
+        HashSet<Bitmap> getBitmaps();
     }
 
 }

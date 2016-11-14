@@ -13,6 +13,9 @@ import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 
+import java.util.HashSet;
+import java.util.UUID;
+
 /**
  * Created by Alexey on 24.09.2016.
  */
@@ -22,18 +25,22 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     private CreateNoteRelations.View mView;
 
     private NotesRepository mNotesRepository;
+    private HashSet<Bitmap> bitmaps = new HashSet<>();
+
+    private String noteId;
 
     public CreateNotePresenter(CreateNoteActivity activity) {
         mView = activity;
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
                 NotesRemoteDataSource.getInstance(), mView.getActivity());
+        noteId = UUID.randomUUID().toString();
     }
 
     @Override
-    public void saveNote(final Note note, final Bitmap image) {
+    public void saveNote(final Note note) {
         mView.showProgressDialog();
-        note.setUnicalId();
-        mNotesRepository.saveNote(note, image, new NotesDataSource.SaveNoteCallback() {
+        note.setId(noteId);
+        mNotesRepository.saveNote(note, bitmaps, new NotesDataSource.SaveNoteCallback() {
             @Override
             public void onNoteSaved() {
                 mView.hideProgressDialog();
@@ -55,4 +62,12 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
         imm.hideSoftInputFromWindow(mView.getActivity().findViewById(android.R.id.content).getWindowToken(), 0);
     }
 
+    @Override
+    public void addImage(Bitmap bitmap) {
+        bitmaps.add(bitmap);
+    }
+
+    public HashSet<Bitmap> getBitmaps() {
+        return bitmaps;
+    }
 }

@@ -101,16 +101,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
         ((TextView) holder.mRootView.findViewById(R.id.text_view_name))
                 .setText(mNotes.get(position).getName());
-
     }
 
 
     private void setImage(int position, final ImageView imageView) {
         try {
-            if (!mNotes.get(position).getLocalImage().equals("")) {
+            if (!mNotes.get(position).getLocalImage()[0].equals("")) {
                 if ((CacheUtils.getBitmapFromMemCache(mNotes.get(position).getId()) == null)) {
                     imageView.setImageBitmap(null);
-                    File imgFile = new File(mNotes.get(position).getLocalImage());
+                    File imgFile = new File(mNotes.get(position).getLocalImage()[0]);//get first image
                     if (imgFile.exists()) {
                         new imageResizer(Uri.fromFile((imgFile)), imageView, position).execute();
                     }

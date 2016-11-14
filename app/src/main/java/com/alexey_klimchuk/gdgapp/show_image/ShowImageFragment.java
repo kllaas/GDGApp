@@ -40,10 +40,10 @@ public class ShowImageFragment extends Fragment {
 
         ButterKnife.bind(this, v);
         noteId = getArguments().getString(Constants.EXTRA_NOTE_ID);
-        String[] data = {NotesRepository.getCachedNotesMap().get(noteId).getLocalImage(),
-                NotesRepository.getCachedNotesMap().get(noteId).getLocalImage(),
-                NotesRepository.getCachedNotesMap().get(noteId).getLocalImage(),
-                NotesRepository.getCachedNotesMap().get(noteId).getLocalImage()};
+        String data[] = new String[5];
+        for (int i = 0; i < NotesRepository.getCachedNotesMap().get(noteId).getLocalImage().length; i++) {
+            data = NotesRepository.getCachedNotesMap().get(noteId).getLocalImage();
+        }
         ImageShowPagerAdapter adapter = new ImageShowPagerAdapter(mViewPager, data);
         mViewPager.setAdapter(adapter);
         mViewPager.setPageMargin(20);

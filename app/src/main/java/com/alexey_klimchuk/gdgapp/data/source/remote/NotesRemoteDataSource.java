@@ -17,20 +17,15 @@
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
-import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,10 +38,10 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -72,7 +67,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     public static void loadImage(final Note note, final LoadImageCallback imageLoadedListener) {
-        final long ONE_MEGABYTE = 1024 * 1024;
+       /* final long ONE_MEGABYTE = 1024 * 1024;
         StorageReference storageRef = FirebaseStorage.getInstance()
                 .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
 
@@ -95,7 +90,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
                 Log.d("Loading image: ", exception.getMessage());
                 imageLoadedListener.onImageNotAvailable();
             }
-        });
+        });*/
     }
 
     /**
@@ -156,8 +151,8 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull final Note note, final Bitmap bitmap, final SaveNoteCallback callback) {
-        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+    public void saveNote(@NonNull final Note note, final HashSet<Bitmap> bitmap, final SaveNoteCallback callback) {
+        /*mDatabase.child(Constants.Firebase.USERS_FOLDER)
                 .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
                 .child(Constants.Firebase.NOTES_FOLDER)
                 .child(note.getId())
@@ -175,11 +170,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
                             callback.onError();
                         }
                     }
-                });
+                });*/
     }
 
     @Override
-    public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
+    public void editNote(@NonNull Note note, HashSet<Bitmap> image, SaveNoteCallback callback) {
 
     }
 

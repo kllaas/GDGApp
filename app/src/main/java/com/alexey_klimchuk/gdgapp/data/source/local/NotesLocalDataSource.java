@@ -30,6 +30,7 @@ import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContract.NoteEntry;
@@ -41,7 +42,7 @@ import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContr
 public class NotesLocalDataSource implements NotesDataSource {
 
     private static NotesLocalDataSource INSTANCE;
-
+    private static String strSeparator = "__,__";
     private NotesDbHelper mDbHelper;
 
     // Prevent direct instantiation.
@@ -54,6 +55,26 @@ public class NotesLocalDataSource implements NotesDataSource {
             INSTANCE = new NotesLocalDataSource(context);
         }
         return INSTANCE;
+    }
+
+    private static String convertArrayToString(String[] array) {
+        if (array == null) {
+            return "";
+        }
+        String str = "";
+        for (int i = 0; i < array.length; i++) {
+            str = str + array[i];
+            // Do not append comma at the end of last element
+            if (i < array.length - 1) {
+                str = str + strSeparator;
+            }
+        }
+        return str;
+    }
+
+    private static String[] convertStringToArray(String str) {
+        String[] arr = str.split(strSeparator);
+        return arr;
     }
 
     /**
@@ -93,8 +114,8 @@ public class NotesLocalDataSource implements NotesDataSource {
                         c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
                 Note.Mood mood =
                         Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), image, mood);
-                note.setLocalImage(imageLocal == null ? "" : imageLocal);
+                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), convertStringToArray(image), mood);
+                note.setLocalImage(convertStringToArray(imageLocal));
                 notes.add(note);
             }
         }
@@ -153,7 +174,8 @@ public class NotesLocalDataSource implements NotesDataSource {
                     c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
             Note.Mood mood =
                     Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-            note = new Note(itemId, name, content, new Date(Long.valueOf(date)), image, localImage, mood);
+            note = new Note(itemId, name, content, new Date(Long.valueOf(date)),
+                    convertStringToArray(image), convertStringToArray(localImage), mood);
         }
         if (c != null) {
             c.close();
@@ -169,22 +191,20 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
+    public void editNote(@NonNull Note note, HashSet<Bitmap> images, SaveNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
         values.put(NoteEntry.NAME_COLUMN, note.getContent());
         values.put(NoteEntry.CONTENT_COLUMN, note.getContent());
-        values.put(NoteEntry.IMAGE_COLUMN, note.getImage());
+        values.put(NoteEntry.IMAGE_COLUMN, convertArrayToString(note.getImage()));
         values.put(NoteEntry.DATE_COLUMN, note.getDate());
         values.put(NoteEntry.MOOD_COLUMN, note.getMood().ordinal());
 
-        if (image != null) {
-            values.put(NoteEntry.IMAGE_LOCAL_COLUMN, note.getLocalImage());
-            //to use new image in RecyclerView
-            CacheUtils.removeBitmapFromMemCache(note.getId());
-        }
+        values.put(NoteEntry.IMAGE_LOCAL_COLUMN, convertArrayToString(note.getLocalImage()));
+        //to use new image in RecyclerView
+        CacheUtils.removeBitmapFromMemCache(note.getId());
 
         db.update(NoteEntry.TABLE_NAME, values, NoteEntry.COLUMN_NAME_ENTRY_ID + " = ?",
                 new String[]{note.getId()});
@@ -197,18 +217,18 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull Note note, Bitmap bitmap, SaveNoteCallback callback) {
+    public void saveNote(@NonNull Note note, HashSet<Bitmap> bitmap, SaveNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
         values.put(NoteEntry.NAME_COLUMN, note.getContent());
         values.put(NoteEntry.CONTENT_COLUMN, note.getContent());
-        values.put(NoteEntry.IMAGE_COLUMN, note.getImage());
+        values.put(NoteEntry.IMAGE_COLUMN, convertArrayToString(note.getImage()));
         values.put(NoteEntry.DATE_COLUMN, note.getDate());
         values.put(NoteEntry.MOOD_COLUMN, note.getMood().ordinal());
 
-        values.put(NoteEntry.IMAGE_LOCAL_COLUMN, note.getLocalImage());
+        values.put(NoteEntry.IMAGE_LOCAL_COLUMN, convertArrayToString(note.getLocalImage()));
 
         db.insert(NoteEntry.TABLE_NAME, null, values);
 
@@ -283,8 +303,8 @@ public class NotesLocalDataSource implements NotesDataSource {
                         c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
                 Note.Mood mood =
                         Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), image, mood);
-                note.setLocalImage(imageLocal == null ? "" : imageLocal);
+                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), convertStringToArray(image), mood);
+                note.setLocalImage(convertStringToArray(imageLocal));
                 notes.add(note);
             }
         }

@@ -105,12 +105,16 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
      * Picking image from gallery
      */
     private void pickImage() {
-        Intent intent = new Intent();
-        // Show only images, no videos or anything else
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        // Always show the chooser (if there are multiple options available)
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        if (presenter.getBitmaps().size() <= 5) {
+            Intent intent = new Intent();
+            // Show only images, no videos or anything else
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            // Always show the chooser (if there are multiple options available)
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        } else {
+            showMessage(getString(R.string.cant_add_more_images_message));
+        }
     }
 
     /**
@@ -201,9 +205,9 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     }
 
     private void setImage(Note note) {
-        if (note.getLocalImage() != null) {
+        if (note.getLocalImage()[0] != null) {
             try {
-                File imgFile = new File(note.getLocalImage());
+                File imgFile = new File(note.getLocalImage()[0]);
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                     ((EditNoteActivity) getActivity()).getNoteImage().setImageBitmap(myBitmap);

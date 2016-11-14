@@ -13,11 +13,11 @@ public class Note {
     private String name = "";
     private String content = "";
     private long date;
-    private String image = "";
-    private String localImage = "";
+    private String[] image;
+    private String[] localImage;
     private Mood mMood;
 
-    public Note(String id, String name, String content, Date date, String image, Mood mMood) {
+    public Note(String id, String name, String content, Date date, String[] image, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -36,7 +36,7 @@ public class Note {
     public Note() {
     }
 
-    public Note(String name, String content, Date date, String image, Mood mood) {
+    public Note(String name, String content, Date date, String[] image, Mood mood) {
         this.name = name;
         this.content = content;
         this.date = date.getTime();
@@ -44,7 +44,7 @@ public class Note {
         mMood = mood;
     }
 
-    public Note(String id, String name, String content, Date date, String image, String localImage, Mood mMood) {
+    public Note(String id, String name, String content, Date date, String[] image, String[] localImage, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -54,11 +54,11 @@ public class Note {
         this.mMood = mMood;
     }
 
-    public String getLocalImage() {
+    public String[] getLocalImage() {
         return localImage;
     }
 
-    public void setLocalImage(String localImage) {
+    public void setLocalImage(String[] localImage) {
         this.localImage = localImage;
     }
 
@@ -106,11 +106,11 @@ public class Note {
         this.date = date;
     }
 
-    public String getImage() {
+    public String[] getImage() {
         return image;
     }
 
-    public void setImage(String image) {
+    public void setImage(String[] image) {
         this.image = image;
     }
 

@@ -10,6 +10,8 @@ import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 
+import java.util.HashSet;
+
 /**
  * Created by Alexey on 24.09.2016.
  */
@@ -21,6 +23,8 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
     private boolean oneWaySaved = false;
 
     private NotesRepository mNotesRepository;
+    private HashSet<Bitmap> bitmaps = new HashSet<>();
+
     private String noteId;
     private Note mNote;
 
@@ -36,7 +40,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
         note.setLocalImage(mNote.getLocalImage());
         note.setImage(mNote.getImage());
         note.setId(noteId);
-        mNotesRepository.editNote(note, image, new NotesDataSource.SaveNoteCallback() {
+        mNotesRepository.editNote(note, bitmaps, new NotesDataSource.SaveNoteCallback() {
             @Override
             public void onNoteSaved() {
                 if (oneWaySaved) {
@@ -74,6 +78,16 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
                 ToastUtils.showMessage(R.string.message_loading_failed, mView.getActivity());
             }
         });
+    }
+
+    @Override
+    public void addImage(Bitmap bitmap) {
+        bitmaps.add(bitmap);
+    }
+
+    @Override
+    public HashSet<Bitmap> getBitmaps() {
+        return bitmaps;
     }
 
 }

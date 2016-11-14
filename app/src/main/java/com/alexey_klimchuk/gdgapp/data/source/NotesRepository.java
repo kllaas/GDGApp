@@ -25,10 +25,10 @@ import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,15 +128,21 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull final Note note, final Bitmap image,
+    public void saveNote(@NonNull final Note note, final HashSet<Bitmap> images,
                          final SaveNoteCallback callback) {
-        if (image != null) {
-            try {
-                BitmapUtils.deleteImageFile(note.getLocalImage());
-                note.setLocalImage(BitmapUtils.createImageFile(image, true));
-            } catch (Exception ignored) {
+        String[] localImages = new String[5];
+        if (images != null) {
+            int i = 0;
+            for (Bitmap bitmap : images) {
+                try {
+                    localImages[i] = BitmapUtils.createImageFile(bitmap, true);
+                    i++;
+                } catch (Exception ignored) {
+                }
             }
         }
+
+        note.setLocalImage(localImages);
 
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
@@ -145,21 +151,34 @@ public class NotesRepository implements NotesDataSource {
         notes.add(0, note);
         refreshCache(notes);
 
-        mNotesLocalDataSource.saveNote(note, image, callback);
+        mNotesLocalDataSource.saveNote(note, images, callback);
     }
 
     @Override
-    public void editNote(@NonNull Note note, Bitmap image, SaveNoteCallback callback) {
-        if (image != null) {
-            try {
-                BitmapUtils.deleteImageFile(note.getLocalImage());
-                note.setLocalImage(BitmapUtils.createImageFile(image, false));
-            } catch (IOException e) {
-                e.printStackTrace();
+    public void editNote(@NonNull Note note, HashSet<Bitmap> images, SaveNoteCallback callback) {
+        //Delete old images
+        for (int i = 0; i < note.getLocalImage().length; i++) {
+            if (note.getLocalImage()[i] != null) {
+                BitmapUtils.deleteImageFile(note.getLocalImage()[i]);
             }
         }
 
-        mNotesLocalDataSource.editNote(note, image, callback);
+        //Add new images
+        String[] localImages = new String[5];
+        if (images != null) {
+            int i = 0;
+            for (Bitmap bitmap : images) {
+                try {
+                    localImages[i] = BitmapUtils.createImageFile(bitmap, true);
+                    i++;
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        note.setLocalImage(localImages);
+
+        mNotesLocalDataSource.editNote(note, images, callback);
 
         // Do in memory cache update to keep the app UI up to date
         if (mCachedNotes == null) {

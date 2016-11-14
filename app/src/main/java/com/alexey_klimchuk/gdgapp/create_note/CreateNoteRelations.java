@@ -26,7 +26,9 @@ public class CreateNoteRelations {
 
     interface Presenter {
 
-        void saveNote(Note note, Bitmap image);
+        void saveNote(Note note);
+
+        void addImage(Bitmap bitmap);
     }
 
 }

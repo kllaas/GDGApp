@@ -85,12 +85,16 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
      * Picking image from gallery
      */
     private void pickImage() {
-        Intent intent = new Intent();
-        // Show only images, no videos or anything else
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        // Always show the chooser (if there are multiple options available)
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        if (presenter.getBitmaps().size() <= 5) {
+            Intent intent = new Intent();
+            // Show only images, no videos or anything else
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            // Always show the chooser (if there are multiple options available)
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        } else {
+            showMessage(getString(R.string.cant_add_more_images_message));
+        }
     }
 
     /**
@@ -109,12 +113,14 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 try {
-                    currentBitmap = BitmapUtils.resizeImage(CreateNoteActivity.this, result.getUri(), 600);
+                    Bitmap bitmap = BitmapUtils.resizeImage(CreateNoteActivity.this, result.getUri(), 600);
                     ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
+                    currentBitmap = bitmap;
 
                     // clear drawing cache
                     imageView.setDrawingCacheEnabled(false);
                     imageView.setImageBitmap(currentBitmap);
+                    presenter.addImage(bitmap);
                 } catch (IOException e) {
                     Toast.makeText(CreateNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -131,7 +137,7 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     public void onClick(View view) {
         Note note = new Note(noteName.getText().toString(), noteContent.getText().toString(),
                 new Date(), getMoodFromSpinner());
-        presenter.saveNote(note, currentBitmap);
+        presenter.saveNote(note);
     }
 
     /**

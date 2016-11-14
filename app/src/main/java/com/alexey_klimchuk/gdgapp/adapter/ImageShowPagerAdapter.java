@@ -49,9 +49,11 @@ public class ImageShowPagerAdapter extends RecyclePagerAdapter<ImageShowPagerAda
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
-        File imgFile = new File(photos[position]);
-        if (imgFile.exists()) {
-            holder.image.setImageDrawable(Drawable.createFromPath(photos[position]));
+        if (photos[position] != null) {
+            File imgFile = new File(photos[position]);
+            if (imgFile.exists()) {
+                holder.image.setImageDrawable(Drawable.createFromPath(photos[position]));
+            }
         }
 
         holder.image.getController().getSettings().enableGestures();

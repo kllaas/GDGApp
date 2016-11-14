@@ -22,6 +22,7 @@ import android.support.annotation.NonNull;
 import com.alexey_klimchuk.gdgapp.data.Note;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -38,9 +39,9 @@ public interface NotesDataSource {
 
     void getNote(@NonNull String NoteId, @NonNull GetNoteCallback callback);
 
-    void saveNote(@NonNull Note Note, Bitmap image, SaveNoteCallback callback);
+    void saveNote(@NonNull Note note, HashSet<Bitmap> images, SaveNoteCallback callback);
 
-    void editNote(@NonNull Note Note, Bitmap image, SaveNoteCallback callback);
+    void editNote(@NonNull Note note, HashSet<Bitmap> image, SaveNoteCallback callback);
 
     void refreshNotes();
 

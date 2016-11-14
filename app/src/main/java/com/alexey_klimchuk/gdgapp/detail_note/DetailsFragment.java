@@ -155,9 +155,9 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     }
 
     private void setImage(Note note) {
-        if (note.getLocalImage() != null) {
+        if (note.getLocalImage()[0] != null) {
             try {
-                File imgFile = new File(note.getLocalImage());
+                File imgFile = new File(note.getLocalImage()[0]);
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                     ((DetailNoteActivity) getActivity()).getNoteImage().setImageBitmap(myBitmap);
