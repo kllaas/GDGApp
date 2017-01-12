@@ -17,10 +17,16 @@ public interface LoginRelations {
         void showMessage(int message);
 
         Activity getActivity();
+
+        String getEmail();
+
+        String getPassword();
     }
 
     interface Presenter {
 
-        void login(String email, String password);
+        void tryToLogin();
+
+        void login();
     }
 }

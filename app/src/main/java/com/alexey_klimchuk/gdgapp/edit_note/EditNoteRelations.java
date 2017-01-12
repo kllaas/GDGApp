@@ -2,6 +2,8 @@ package com.alexey_klimchuk.gdgapp.edit_note;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -39,6 +41,10 @@ public class EditNoteRelations {
         void addImage(Bitmap bitmap);
 
         HashSet<Bitmap> getBitmaps();
+
+        ItemTouchHelper getItemTouchHelper();
+
+        RecyclerView.Adapter getImagePreviewAdapter(String[] images);
     }
 
 }

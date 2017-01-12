@@ -1,9 +1,14 @@
 package com.alexey_klimchuk.gdgapp.login;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -19,25 +24,25 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginPresenter implements LoginRelations.Presenter {
 
     private static final String TAG = "mLoginPresenter";
-    private final LoginRelations.View view;
+
+    private final LoginRelations.View mView;
 
     private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
 
     public LoginPresenter(LoginRelations.View loginView) {
-        view = loginView;
+        mView = loginView;
 
         mAuth = FirebaseAuth.getInstance();
 
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
+        FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Intent intent = new Intent(view.getActivity(), NotesActivity.class);
-                    view.getActivity().startActivity(intent);
+                    Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
+                    mView.getActivity().startActivity(intent);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -50,14 +55,34 @@ public class LoginPresenter implements LoginRelations.Presenter {
     }
 
     @Override
-    public void login(String email, String password) {
+    public void tryToLogin() {
+        if (ContextCompat.checkSelfPermission(mView.getActivity(),
+                Manifest.permission.INTERNET)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(mView.getActivity(),
+                    new String[]{Manifest.permission.INTERNET},
+                    Constants.PERMISSIONS_REQUEST_INTERNET);
+
+            return;
+        }
+
+        login();
+    }
+
+    @Override
+    public void login() {
+        String email = mView.getEmail();
+        String password = mView.getPassword();
+
         if (!isValid(email, password)) {
             return;
         }
-        view.showProgressDialog();
+
+        mView.showProgressDialog();
 
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(view.getActivity(), new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(mView.getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         handleCompleteLogging(task);
@@ -68,16 +93,18 @@ public class LoginPresenter implements LoginRelations.Presenter {
     private void handleCompleteLogging(@NonNull Task<AuthResult> task) {
         if (!task.isSuccessful()) {
             Log.w(TAG, "signInWithEmail:failed", task.getException());
-            view.showMessage(R.string.auth_failed);
+            mView.showMessage(R.string.auth_failed);
         }
-        view.hideProgressDialog();
+
+        mView.hideProgressDialog();
     }
 
     private boolean isValid(String email, String password) {
         if (email.length() > 0 && password.length() > 0) {
             return true;
         }
-        view.showMessage(R.string.fields_not_walid);
+
+        mView.showMessage(R.string.fields_not_walid);
         return false;
     }
 }

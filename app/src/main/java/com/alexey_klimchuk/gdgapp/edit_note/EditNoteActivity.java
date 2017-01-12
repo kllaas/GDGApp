@@ -8,7 +8,10 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -50,11 +53,15 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     public ImageView noteImage;
     @BindView(R.id.button_create)
     public Button buttonEdit;
+    @BindView(R.id.preview_pager)
+    public RecyclerView mRecyclerView;
     private String[] spinnerValues = new String[]{"Good", "Norm", "Bad"};
     private Bitmap currentBitmap;
 
     private EditNotePresenter presenter;
     private ProgressDialog mProgressDialog;
+    private LinearLayoutManager mLayoutManager;
+    private ItemTouchHelper mItemTouchHelper;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +70,11 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
 
         // Get the requested task id
         String noteId = getIntent().getStringExtra(Constants.ARGUMENT_EDIT_NOTE_ID);
+
+        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 0);
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         presenter = new EditNotePresenter(this);
         presenter.loadNote(noteId);
@@ -202,6 +214,15 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
         setMood(note);
 
         setImage(note);
+
+        setPreviews(note);
+    }
+
+    private void setPreviews(Note note) {
+
+        mRecyclerView.setAdapter(presenter.getImagePreviewAdapter(note.getLocalImage()));
+
+        presenter.getItemTouchHelper().attachToRecyclerView(mRecyclerView);
     }
 
     private void setImage(Note note) {
@@ -267,4 +288,5 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     public ImageView getNoteImage() {
         return noteImage;
     }
+
 }

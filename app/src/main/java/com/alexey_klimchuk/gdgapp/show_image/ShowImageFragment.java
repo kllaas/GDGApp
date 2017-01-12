@@ -23,7 +23,6 @@ public class ShowImageFragment extends Fragment {
 
     @BindView(R.id.view_pager)
     public ViewPager mViewPager;
-    private String noteId;
 
     public static ShowImageFragment newInstance(@Nullable String noteId) {
         Bundle arguments = new Bundle();
@@ -39,8 +38,8 @@ public class ShowImageFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_show_image, container, false);
 
         ButterKnife.bind(this, v);
-        noteId = getArguments().getString(Constants.EXTRA_NOTE_ID);
-        String data[] = new String[5];
+        String noteId = getArguments().getString(Constants.EXTRA_NOTE_ID);
+        String[] data = new String[5];
         for (int i = 0; i < NotesRepository.getCachedNotesMap().get(noteId).getLocalImage().length; i++) {
             data = NotesRepository.getCachedNotesMap().get(noteId).getLocalImage();
         }
@@ -48,9 +47,5 @@ public class ShowImageFragment extends Fragment {
         mViewPager.setAdapter(adapter);
         mViewPager.setPageMargin(20);
         return v;
-    }
-
-    public interface OnBackPressedListener {
-        void doBack();
     }
 }

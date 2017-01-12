@@ -3,6 +3,7 @@ package com.alexey_klimchuk.gdgapp.login;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.registration.RegistrationActivity;
 
@@ -21,8 +23,9 @@ public class LoginActivity extends AppCompatActivity implements LoginRelations.V
 
     @BindView(R.id.edit_text_password_login)
     EditText password;
+
     @BindView(R.id.edit_text_login)
-    EditText login;
+    EditText email;
 
     private LoginRelations.Presenter mPresenter;
     private ProgressDialog mProgressDialog;
@@ -40,9 +43,23 @@ public class LoginActivity extends AppCompatActivity implements LoginRelations.V
         mPresenter = new LoginPresenter(this);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case Constants.PERMISSIONS_REQUEST_INTERNET: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    mPresenter.login();
+                }
+            }
+        }
+    }
+
     @OnClick(R.id.fab)
     public void onClick(View v) {
-        mPresenter.login(login.getText().toString(), password.getText().toString());
+        mPresenter.tryToLogin();
     }
 
     @OnClick(R.id.btn_sign_up)
@@ -73,5 +90,15 @@ public class LoginActivity extends AppCompatActivity implements LoginRelations.V
     @Override
     public Activity getActivity() {
         return this;
+    }
+
+    @Override
+    public String getEmail() {
+        return email.getText().toString();
+    }
+
+    @Override
+    public String getPassword() {
+        return password.getText().toString();
     }
 }

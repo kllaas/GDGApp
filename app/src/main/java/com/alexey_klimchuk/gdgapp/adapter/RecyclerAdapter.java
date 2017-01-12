@@ -2,17 +2,14 @@ package com.alexey_klimchuk.gdgapp.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,12 +18,11 @@ import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.detail_note.DetailNoteActivity;
-import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
+import com.alexey_klimchuk.gdgapp.utils.ImageResizer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 
@@ -111,7 +107,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                     imageView.setImageBitmap(null);
                     File imgFile = new File(mNotes.get(position).getLocalImage()[0]);//get first image
                     if (imgFile.exists()) {
-                        new imageResizer(Uri.fromFile((imgFile)), imageView, position).execute();
+                        new ImageResizer(mContext, Uri.fromFile((imgFile)), 240, imageView, mNotes.get(position).getId(), true).execute();
                     }
                 } else {
                     imageView.setImageBitmap(CacheUtils.getBitmapFromMemCache(mNotes.get(position).getId()));
@@ -146,44 +142,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         public ViewHolder(View v) {
             super(v);
             mRootView = v;
-        }
-    }
-
-    private class imageResizer extends AsyncTask<Void, Void, Bitmap> {
-
-        private Uri uri;
-        private ImageView imageView;
-        private int position;
-
-        imageResizer(Uri uri, ImageView imageView, int pos) {
-            this.uri = uri;
-            this.imageView = imageView;
-            position = pos;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            Bitmap bitmap = null;
-            try {
-                bitmap = BitmapUtils.resizeImage(mContext, uri, 240);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            CacheUtils.addBitmapToMemoryCache(mNotes.get(position).getId(), bitmap);
-
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            if (bitmap != null) {
-                AlphaAnimation animation = new AlphaAnimation(0f, 1);
-                animation.setDuration(400);
-                imageView.startAnimation(animation);
-                imageView.setImageBitmap(bitmap);
-            }
-            super.onPostExecute(bitmap);
         }
     }
 }
