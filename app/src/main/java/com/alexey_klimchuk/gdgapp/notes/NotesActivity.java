@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -57,6 +58,8 @@ public class NotesActivity extends AppCompatActivity implements NotesRelations.V
             public void onClick(View view) {
                 Intent intent = new Intent(NotesActivity.this, CreateNoteActivity.class);
                 startActivity(intent);
+
+                CacheUtils.tempBitmaps.clear();
             }
         });
 

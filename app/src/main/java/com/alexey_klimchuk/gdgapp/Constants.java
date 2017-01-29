@@ -9,6 +9,7 @@ public class Constants {
     public static final String EXTRA_NOTE_ID = "NOTE_ID";
     public static final String ARGUMENT_EDIT_NOTE_ID = "NOTE_EDIT_ID";
     public static final int PERMISSIONS_REQUEST_INTERNET = 1;
+    public static final int MAX_IMAGES_COUNT = 5;
     public static String DB_URL = "https://gdgapp-2d5ae.firebaseio.com/";
 
     public class Firebase {

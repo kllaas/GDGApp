@@ -12,9 +12,11 @@ import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.ImageShowPagerAdapter;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
+import com.alexey_klimchuk.gdgapp.utils.ActivityUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by Alexey on 13.11.2016.
@@ -43,9 +45,17 @@ public class ShowImageFragment extends Fragment {
         for (int i = 0; i < NotesRepository.getCachedNotesMap().get(noteId).getLocalImage().length; i++) {
             data = NotesRepository.getCachedNotesMap().get(noteId).getLocalImage();
         }
+
         ImageShowPagerAdapter adapter = new ImageShowPagerAdapter(mViewPager, data);
         mViewPager.setAdapter(adapter);
         mViewPager.setPageMargin(20);
+
         return v;
     }
+
+    @OnClick(R.id.btn_back)
+    public void onClick() {
+        ActivityUtils.removeFragment(getActivity().getSupportFragmentManager(), this);
+    }
+
 }

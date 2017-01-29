@@ -41,7 +41,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -151,7 +150,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull final Note note, final HashSet<Bitmap> bitmap, final SaveNoteCallback callback) {
+    public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> bitmap, final SaveNoteCallback callback) {
         /*mDatabase.child(Constants.Firebase.USERS_FOLDER)
                 .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
                 .child(Constants.Firebase.NOTES_FOLDER)
@@ -174,7 +173,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note note, HashSet<Bitmap> image, SaveNoteCallback callback) {
+    public void editNote(@NonNull Note note, ArrayList<Bitmap> image, SaveNoteCallback callback) {
 
     }
 

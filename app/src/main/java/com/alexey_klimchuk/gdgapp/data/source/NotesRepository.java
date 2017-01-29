@@ -28,7 +28,6 @@ import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,18 +127,18 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull final Note note, final HashSet<Bitmap> images,
+    public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> images,
                          final SaveNoteCallback callback) {
-        String[] localImages = new String[5];
-        if (images != null) {
-            int i = 0;
-            for (Bitmap bitmap : images) {
-                try {
-                    localImages[i] = BitmapUtils.createImageFile(bitmap, true);
-                    i++;
-                } catch (Exception ignored) {
-                }
+        String[] localImages = new String[images.size()];
+
+        int i = 0;
+        for (Bitmap bitmap : images) {
+            try {
+                localImages[i] = BitmapUtils.createImageFile(bitmap, true);
+                i++;
+            } catch (Exception ignored) {
             }
+
         }
 
         note.setLocalImage(localImages);
@@ -147,6 +146,7 @@ public class NotesRepository implements NotesDataSource {
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
         }
+
         ArrayList<Note> notes = new ArrayList<Note>(mCachedNotes.values());
         notes.add(0, note);
         refreshCache(notes);
@@ -155,7 +155,7 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note note, HashSet<Bitmap> images, SaveNoteCallback callback) {
+    public void editNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback) {
         //Delete old images
         for (int i = 0; i < note.getLocalImage().length; i++) {
             if (note.getLocalImage()[i] != null) {
@@ -164,19 +164,21 @@ public class NotesRepository implements NotesDataSource {
         }
 
         //Add new images
-        String[] localImages = new String[5];
+        ArrayList<String> localImages = new ArrayList<>();
         if (images != null) {
-            int i = 0;
             for (Bitmap bitmap : images) {
                 try {
-                    localImages[i] = BitmapUtils.createImageFile(bitmap, true);
-                    i++;
+                    localImages.add(BitmapUtils.createImageFile(bitmap, true));
+
                 } catch (Exception ignored) {
                 }
             }
         }
 
-        note.setLocalImage(localImages);
+        String[] imageArray = new String[localImages.size()];
+        localImages.toArray(imageArray);
+
+        note.setLocalImage(imageArray);
 
         mNotesLocalDataSource.editNote(note, images, callback);
 

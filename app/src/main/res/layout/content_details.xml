@@ -1,34 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_below="@+id/image_view_details"
     android:paddingEnd="@dimen/medium_margin"
-    android:paddingStart="@dimen/medium_margin"
-    tools:context=".activities.Details"
-    tools:showIn="@layout/fragment_details">
+    android:paddingStart="@dimen/medium_margin">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="@dimen/large_margin"
-        android:paddingTop="@dimen/large_margin">
+        android:paddingTop="28dp">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/preview_recview"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/preview_images_height"
+            android:layout_alignParentTop="true" />
 
         <View
             android:id="@+id/mood_icon"
             android:layout_width="@dimen/detail_mood_size"
             android:layout_height="@dimen/detail_mood_size"
             android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
+            android:layout_below="@id/preview_recview"
+            android:layout_marginTop="@dimen/medium_margin"
             android:background="@drawable/mood_state" />
 
         <TextView
             android:id="@+id/text_view_name_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
+            android:layout_below="@id/preview_recview"
             android:layout_marginStart="@dimen/small_margin"
+            android:layout_marginTop="@dimen/medium_margin"
             android:layout_toEndOf="@+id/mood_icon"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/large_text_size" />

@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +23,8 @@ import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
+import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -43,38 +44,43 @@ import butterknife.OnClick;
 public class EditNoteActivity extends AppCompatActivity implements EditNoteRelations.View {
 
     private static final int PICK_IMAGE_REQUEST = 1;
+
     @BindView(R.id.spinner)
     public Spinner spinner;
+
     @BindView(R.id.edit_text_name_create)
     public EditText noteName;
+
     @BindView(R.id.edit_text_content)
     public EditText noteContent;
+
     @BindView(R.id.image_view_create)
     public ImageView noteImage;
+
     @BindView(R.id.button_create)
     public Button buttonEdit;
-    @BindView(R.id.preview_pager)
+
+    @BindView(R.id.preview_recview)
     public RecyclerView mRecyclerView;
-    private String[] spinnerValues = new String[]{"Good", "Norm", "Bad"};
+
+    private String[] spinnerValues;
+
     private Bitmap currentBitmap;
 
     private EditNotePresenter presenter;
     private ProgressDialog mProgressDialog;
-    private LinearLayoutManager mLayoutManager;
-    private ItemTouchHelper mItemTouchHelper;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
         ButterKnife.bind(this);
 
-        // Get the requested task id
-        String noteId = getIntent().getStringExtra(Constants.ARGUMENT_EDIT_NOTE_ID);
+        spinnerValues = new String[]{
+                getResources().getString(R.string.mood_good),
+                getResources().getString(R.string.mood_normal),
+                getResources().getString(R.string.mood_bad)};
 
-        mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, 0, 0, 0);
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        String noteId = getIntent().getStringExtra(Constants.ARGUMENT_EDIT_NOTE_ID);
 
         presenter = new EditNotePresenter(this);
         presenter.loadNote(noteId);
@@ -91,7 +97,6 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
      * Initializing  variables
      */
     private void initializeVariables() {
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
@@ -104,11 +109,14 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
             }
         });
 
-        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(EditNoteActivity.this, R.layout.mood_item, spinnerValues);
+        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 0);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // Specify the layout to use when the list of choices appears
+        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(EditNoteActivity.this, R.layout.mood_item, spinnerValues);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);// Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
 
         buttonEdit.setText(R.string.edit_note);
     }
@@ -117,12 +125,12 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
      * Picking image from gallery
      */
     private void pickImage() {
-        if (presenter.getBitmaps().size() <= 5) {
+        if (CacheUtils.tempBitmaps.getFullSizeImages().size() <= 5) {
             Intent intent = new Intent();
-            // Show only images, no videos or anything else
+
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
-            // Always show the chooser (if there are multiple options available)
+
             startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
         } else {
             showMessage(getString(R.string.cant_add_more_images_message));
@@ -135,27 +143,36 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
             Uri selectedImageUri = data.getData();
             CropImage.activity(selectedImageUri)
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .start(this);
         }
+
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
             if (resultCode == RESULT_OK) {
                 try {
                     currentBitmap = BitmapUtils.resizeImage(EditNoteActivity.this, result.getUri(), 600);
                     ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
 
-                    // clear drawing cache
                     imageView.setDrawingCacheEnabled(false);
                     imageView.setImageBitmap(currentBitmap);
+
+                    presenter.addImage(currentBitmap);
+
                 } catch (IOException e) {
+
                     Toast.makeText(EditNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
+
+                ToastUtils.showMessage(result.getError().getMessage(), this);
             }
         }
     }
@@ -175,11 +192,14 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
      */
     private Note.Mood getMoodFromSpinner() {
         String item = spinner.getSelectedItem().toString();
+
         if (item.equals(spinnerValues[0])) {
             return Note.Mood.GOOD;
         }
+
         if (item.equals(spinnerValues[1])) {
             return Note.Mood.NORMAL;
+
         } else return Note.Mood.BAD;
     }
 
@@ -221,16 +241,16 @@ public class EditNoteActivity extends AppCompatActivity implements EditNoteRelat
     private void setPreviews(Note note) {
 
         mRecyclerView.setAdapter(presenter.getImagePreviewAdapter(note.getLocalImage()));
-
-        presenter.getItemTouchHelper().attachToRecyclerView(mRecyclerView);
     }
 
     private void setImage(Note note) {
         if (note.getLocalImage()[0] != null) {
             try {
+
                 File imgFile = new File(note.getLocalImage()[0]);
                 if (imgFile.exists()) {
                     Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
                     ((EditNoteActivity) getActivity()).getNoteImage().setImageBitmap(myBitmap);
                 }
             } catch (Exception e) {

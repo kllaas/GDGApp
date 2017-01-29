@@ -6,11 +6,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.alexey_klimchuk.gdgapp.BaseActivity;
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.registration.RegistrationActivity;
@@ -19,7 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity implements LoginRelations.View {
+public class LoginActivity extends BaseActivity implements LoginRelations.View {
 
     @BindView(R.id.edit_text_password_login)
     EditText password;
@@ -66,20 +66,6 @@ public class LoginActivity extends AppCompatActivity implements LoginRelations.V
     public void signUp(View v) {
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
-    }
-
-    @Override
-    public void showProgressDialog() {
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setMessage(getString(R.string.message_loading));
-        mProgressDialog.show();
-    }
-
-    @Override
-    public void hideProgressDialog() {
-        mProgressDialog.cancel();
     }
 
     @Override

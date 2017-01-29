@@ -3,6 +3,7 @@ package com.alexey_klimchuk.gdgapp.detail_note;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -33,6 +34,8 @@ public class DetailNoteRelations {
         void deleteNote();
 
         DialogInterface.OnClickListener getDeleteOnClick();
+
+        RecyclerView.Adapter getPreviewAdapter(String[] localImage);
     }
 
 }

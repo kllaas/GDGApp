@@ -3,17 +3,19 @@ package com.alexey_klimchuk.gdgapp.create_note;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.support.v7.widget.RecyclerView;
 import android.view.inputmethod.InputMethodManager;
 
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.adapter.PreviewEditImageAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
-import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -25,7 +27,7 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     private CreateNoteRelations.View mView;
 
     private NotesRepository mNotesRepository;
-    private HashSet<Bitmap> bitmaps = new HashSet<>();
+    private PreviewEditImageAdapter mPreviewAdapter;
 
     private String noteId;
 
@@ -39,11 +41,14 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     @Override
     public void saveNote(final Note note) {
         mView.showProgressDialog();
+
         note.setId(noteId);
-        mNotesRepository.saveNote(note, bitmaps, new NotesDataSource.SaveNoteCallback() {
+
+        mNotesRepository.saveNote(note, CacheUtils.tempBitmaps.getFullSizeImages(), new NotesDataSource.SaveNoteCallback() {
             @Override
             public void onNoteSaved() {
                 mView.hideProgressDialog();
+
                 Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
                 mView.getActivity().startActivity(intent);
                 hideKeyBoard();
@@ -64,10 +69,14 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
 
     @Override
     public void addImage(Bitmap bitmap) {
-        bitmaps.add(bitmap);
+        CacheUtils.tempBitmaps.addImage(bitmap);
+        mPreviewAdapter.notifyDataSetChanged();
     }
 
-    public HashSet<Bitmap> getBitmaps() {
-        return bitmaps;
+    @Override
+    public RecyclerView.Adapter getImagePreviewAdapter() {
+        mPreviewAdapter = new PreviewEditImageAdapter(mView.getActivity());
+        return mPreviewAdapter;
     }
+
 }

@@ -8,4 +8,5 @@
     <color name="colorBlack">#000000</color>
     <color name="colorNormal">#ffd35a</color>
     <color name="colorBad">#b90d0d</color>
+    <color name="backToolbarDark">#b0000000</color>
 </resources>

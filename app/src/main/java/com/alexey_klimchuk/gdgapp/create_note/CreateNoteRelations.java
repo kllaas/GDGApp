@@ -2,6 +2,7 @@ package com.alexey_klimchuk.gdgapp.create_note;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.support.v7.widget.RecyclerView;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 
@@ -29,6 +30,7 @@ public class CreateNoteRelations {
         void saveNote(Note note);
 
         void addImage(Bitmap bitmap);
-    }
 
+        RecyclerView.Adapter getImagePreviewAdapter();
+    }
 }

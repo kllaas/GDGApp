@@ -51,7 +51,7 @@ public class ImageResizer extends AsyncTask<Void, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
-        if (bitmap != null) {
+        if (bitmap != null && imageView != null) {
             AlphaAnimation animation = new AlphaAnimation(0f, 1);
             animation.setDuration(400);
             imageView.startAnimation(animation);

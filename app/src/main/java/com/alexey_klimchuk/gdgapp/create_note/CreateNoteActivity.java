@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
@@ -14,10 +16,12 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.adapter.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -28,11 +32,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-/**
- * This activity work in two modes: creating and updating
- * At creating create note in db.
- * At updating - update it.
- */
 public class CreateNoteActivity extends AppCompatActivity implements CreateNoteRelations.View {
 
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -44,16 +43,20 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     public EditText noteContent;
     @BindView(R.id.image_view_create)
     public ImageView noteImage;
+    @BindView(R.id.preview_recview)
+    public RecyclerView mRecyclerView;
     private String[] spinnerValues = new String[]{"Good", "Norm", "Bad"};
-    private Bitmap currentBitmap;
-
     private CreateNotePresenter presenter;
+
     private ProgressDialog mProgressDialog;
+
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_note);
+
         ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
@@ -76,21 +79,27 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     private void initializeVariables() {
         CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(CreateNoteActivity.this, R.layout.mood_item, spinnerValues);
 
-        // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);// Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
+        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 0);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        mRecyclerView.setAdapter(presenter.getImagePreviewAdapter());
     }
 
     /**
      * Picking image from gallery
      */
     private void pickImage() {
-        if (presenter.getBitmaps().size() <= 5) {
+        if (CacheUtils.tempBitmaps.getFullSizeImages().size() < Constants.MAX_IMAGES_COUNT) {
             Intent intent = new Intent();
-            // Show only images, no videos or anything else
+
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
-            // Always show the chooser (if there are multiple options available)
+
             startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
         } else {
             showMessage(getString(R.string.cant_add_more_images_message));
@@ -103,23 +112,27 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri selectedImageUri = data.getData();
+
             CropImage.activity(selectedImageUri)
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .start(this);
         }
+
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
             if (resultCode == RESULT_OK) {
                 try {
                     Bitmap bitmap = BitmapUtils.resizeImage(CreateNoteActivity.this, result.getUri(), 600);
                     ImageView imageView = (ImageView) findViewById(R.id.image_view_create);
-                    currentBitmap = bitmap;
 
-                    // clear drawing cache
                     imageView.setDrawingCacheEnabled(false);
-                    imageView.setImageBitmap(currentBitmap);
+                    imageView.setImageBitmap(bitmap);
+
                     presenter.addImage(bitmap);
                 } catch (IOException e) {
                     Toast.makeText(CreateNoteActivity.this, "Something is wrong: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -181,4 +194,6 @@ public class CreateNoteActivity extends AppCompatActivity implements CreateNoteR
     public Activity getActivity() {
         return this;
     }
+
+
 }

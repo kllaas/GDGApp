@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -85,5 +86,26 @@ public class BitmapUtils {
                 Log.d(TAG, "file was not deleted");
             }
         }
+    }
+
+    public static ArrayList<Bitmap> getBitmapsFromURIs(String[] images, Context context, boolean shouldResize) {
+        ArrayList<Bitmap> bitmaps = new ArrayList<>();
+
+        for (String image : images) {
+            try {
+                File file = new File(image);
+
+                if (shouldResize) {
+                    bitmaps.add(BitmapUtils.resizeImage(context, Uri.fromFile(file), 256));
+                } else {
+                    bitmaps.add(BitmapFactory.decodeFile(file.getAbsolutePath()));
+                }
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return bitmaps;
     }
 }

@@ -14,18 +14,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="@dimen/large_margin"
-        android:paddingTop="@dimen/large_margin">
+        android:paddingTop="28dp">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/preview_pager"
+            android:id="@+id/preview_recview"
             android:layout_width="match_parent"
-            android:layout_height="128dp" />
+            android:layout_height="@dimen/preview_images_height" />
 
         <EditText
             android:id="@+id/edit_text_name_create"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/preview_pager"
+            android:layout_below="@+id/preview_recview"
             android:hint="@string/note_name"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/large_text_size" />

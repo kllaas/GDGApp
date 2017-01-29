@@ -1,5 +1,8 @@
 package com.alexey_klimchuk.gdgapp.data;
 
+import com.alexey_klimchuk.gdgapp.App;
+import com.alexey_klimchuk.gdgapp.R;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -118,9 +121,24 @@ public class Note {
      * Mood states
      */
     public enum Mood {
+
         GOOD,
         NORMAL,
-        BAD
+        BAD;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case GOOD:
+                    return App.getAppContext().getResources().getString(R.string.mood_good);
+                case NORMAL:
+                    return App.getAppContext().getResources().getString(R.string.mood_normal);
+                case BAD:
+                    return App.getAppContext().getResources().getString(R.string.mood_bad);
+                default:
+                    return "";
+            }
+        }
     }
 
 }

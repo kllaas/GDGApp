@@ -30,7 +30,6 @@ import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContract.NoteEntry;
@@ -191,7 +190,7 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void editNote(@NonNull Note note, HashSet<Bitmap> images, SaveNoteCallback callback) {
+    public void editNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -217,7 +216,7 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull Note note, HashSet<Bitmap> bitmap, SaveNoteCallback callback) {
+    public void saveNote(@NonNull Note note, ArrayList<Bitmap> bitmap, SaveNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();

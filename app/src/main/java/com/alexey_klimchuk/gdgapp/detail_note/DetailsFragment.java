@@ -12,6 +12,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,7 @@ import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.edit_note.EditNoteActivity;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.io.File;
@@ -41,14 +44,22 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
 
     private static final int REQUEST_EDIT_TASK = 1;
     private static final String TAG = "mDetails";
+
     @BindView(R.id.mood_icon)
     public View moodState;
+
     @BindView(R.id.text_view_name_details)
     public TextView noteName;
+
     @BindView(R.id.text_view_date_details)
     public TextView noteDate;
+
     @BindView(R.id.text_view_content_details)
     public TextView noteContent;
+
+    @BindView(R.id.preview_recview)
+    public RecyclerView mRecyclerView;
+
     private DetailNoteRelations.Presenter mPresenter;
     private ProgressDialog mProgressDialog;
 
@@ -80,9 +91,18 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
         mPresenter = new DetailNotePresenter(this);
         mPresenter.loadNote(noteId);
 
+        initVars();
+
         ((DetailNoteActivity) getActivity()).getFab().setOnClickListener(fabOnClick);
 
         return root;
+    }
+
+    private void initVars() {
+        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, 0, 0, 0);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
     }
 
     @Override
@@ -108,14 +128,11 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_details, menu);
     }
-/*
-    @Override
-    public void showTaskDeleted() {
-        getActivity().finish();
-    }*/
 
     @Override
     public void showEditTask(@NonNull String noteId) {
+        CacheUtils.tempBitmaps.clear();
+
         Intent intent = new Intent(getContext(), EditNoteActivity.class);
         intent.putExtra(Constants.ARGUMENT_EDIT_NOTE_ID, noteId);
         startActivityForResult(intent, REQUEST_EDIT_TASK);
@@ -124,7 +141,7 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_EDIT_TASK) {
-            // If the task was edited successfully, go back to the list.
+
             if (resultCode == Activity.RESULT_OK) {
                 mPresenter.loadNote(noteId);
             }
@@ -152,7 +169,15 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
         setMood(note);
 
         setImage(note);
+
+        setPreviews(note);
     }
+
+
+    private void setPreviews(Note note) {
+        mRecyclerView.setAdapter(mPresenter.getPreviewAdapter(note.getLocalImage()));
+    }
+
 
     private void setImage(Note note) {
         if (note.getLocalImage()[0] != null) {

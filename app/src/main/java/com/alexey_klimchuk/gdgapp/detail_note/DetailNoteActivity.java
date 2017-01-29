@@ -14,6 +14,7 @@ import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
 import com.alexey_klimchuk.gdgapp.show_image.ShowImageFragment;
 import com.alexey_klimchuk.gdgapp.utils.ActivityUtils;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +29,7 @@ public class DetailNoteActivity extends AppCompatActivity {
 
     @BindView(R.id.image_view_details)
     public ImageView noteImage;
+
     @BindView(R.id.fab)
     public FloatingActionButton fab;
 
@@ -98,6 +100,8 @@ public class DetailNoteActivity extends AppCompatActivity {
     private void startNotesActivity() {
         Intent intent = new Intent(DetailNoteActivity.this, NotesActivity.class);
         startActivity(intent);
+
+        CacheUtils.tempBitmaps.clear();
     }
 
     public ImageView getNoteImage() {

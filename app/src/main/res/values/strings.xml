@@ -30,7 +30,11 @@
     <string name="cancel">Cancel</string>
     <string name="should_select_date_message">Pleace, select date to search</string>
     <string name="there_is_no_available_data">There is no available data =(</string>
-    <string name="cant_add_more_images_message">Sorry, but you can add only 5 most beautiful images =(</string>
+    <string name="cant_add_more_images_message">Sorry, but you can add only 5 most beautiful images :(</string>
+    <string name="error_image_adding">Can`t load image :(</string>
+    <string name="mood_good">Good</string>
+    <string name="mood_normal">Norm</string>
+    <string name="mood_bad">Bad</string>
     <string-array name="mood_variants">
         <item>Good</item>
         <item>Normal</item>

@@ -3,6 +3,8 @@ package com.alexey_klimchuk.gdgapp.utils;
 import android.graphics.Bitmap;
 import android.support.v4.util.LruCache;
 
+import com.alexey_klimchuk.gdgapp.models.TempBitmap;
+
 /**
  * Created by Alexey on 13.11.2016.
  */
@@ -10,6 +12,7 @@ import android.support.v4.util.LruCache;
 public class CacheUtils {
 
     public static LruCache<String, Bitmap> mMemoryCache;
+    public static TempBitmap tempBitmaps = new TempBitmap();
 
     public static void initCache() {
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);

@@ -2,14 +2,18 @@ package com.alexey_klimchuk.gdgapp.detail_note;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.widget.RecyclerView;
 
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.adapter.PreviewImageAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.notes.NotesActivity;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
+import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 
 /**
@@ -21,6 +25,7 @@ public class DetailNotePresenter implements DetailNoteRelations.Presenter {
     private DetailNoteRelations.View mView;
 
     private NotesRepository mNotesRepository;
+
     private String noteId;
 
     public DetailNotePresenter(DetailNoteRelations.View view) {
@@ -75,5 +80,12 @@ public class DetailNotePresenter implements DetailNoteRelations.Presenter {
                 });
             }
         };
+    }
+
+    @Override
+    public RecyclerView.Adapter getPreviewAdapter(String[] localImage) {
+        CacheUtils.tempBitmaps.createFromMem(BitmapUtils.getBitmapsFromURIs(localImage, mView.getActivity(), false));
+
+        return new PreviewImageAdapter();
     }
 }
