@@ -15,18 +15,19 @@ import java.io.FileNotFoundException;
 
 public class ImageResizer extends AsyncTask<Void, Void, Bitmap> {
 
+    private Context mContext;
     private int size;
     private Uri uri;
+
+    private Bitmap image;
 
     private ImageView imageView;
     private String bitmapId;
 
     private boolean shouldCache;
 
-    private Context mContext;
-
-    public ImageResizer(Context mContext, Uri uri, int size, ImageView imageView, String bitmapId, boolean shouldCache) {
-        this.mContext = mContext;
+    public ImageResizer(Context context, Uri uri, int size, ImageView imageView, String bitmapId, boolean shouldCache) {
+        mContext = context;
         this.uri = uri;
         this.size = size;
         this.imageView = imageView;
@@ -34,13 +35,26 @@ public class ImageResizer extends AsyncTask<Void, Void, Bitmap> {
         this.shouldCache = shouldCache;
     }
 
+    public ImageResizer(Bitmap bitmap, int size, ImageView imageView, String id, boolean shouldCache) {
+        this.image = bitmap;
+        this.size = size;
+        this.imageView = imageView;
+        this.bitmapId = id;
+        this.shouldCache = shouldCache;
+    }
+
     @Override
     protected Bitmap doInBackground(Void... params) {
         Bitmap bitmap = null;
-        try {
-            bitmap = BitmapUtils.resizeImage(mContext, uri, size);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+
+        if (image == null) {
+            try {
+                bitmap = BitmapUtils.resizeImage(mContext, uri, size);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        } else {
+            bitmap = BitmapUtils.resizeImage(image, size);
         }
 
         if (shouldCache)

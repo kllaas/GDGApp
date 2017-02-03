@@ -3,6 +3,7 @@ package com.alexey_klimchuk.gdgapp.data;
 import com.alexey_klimchuk.gdgapp.App;
 import com.alexey_klimchuk.gdgapp.R;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,11 +17,11 @@ public class Note {
     private String name = "";
     private String content = "";
     private long date;
-    private String[] image;
-    private String[] localImage;
+    private ArrayList<String> image;
+    private ArrayList<String> localImage;
     private Mood mMood;
 
-    public Note(String id, String name, String content, Date date, String[] image, Mood mMood) {
+    public Note(String id, String name, String content, Date date, ArrayList<String> image, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -39,7 +40,7 @@ public class Note {
     public Note() {
     }
 
-    public Note(String name, String content, Date date, String[] image, Mood mood) {
+    public Note(String name, String content, Date date, ArrayList<String> image, Mood mood) {
         this.name = name;
         this.content = content;
         this.date = date.getTime();
@@ -47,7 +48,7 @@ public class Note {
         mMood = mood;
     }
 
-    public Note(String id, String name, String content, Date date, String[] image, String[] localImage, Mood mMood) {
+    public Note(String id, String name, String content, Date date, ArrayList<String> image, ArrayList<String> localImage, Mood mMood) {
         this.id = id;
         this.name = name;
         this.content = content;
@@ -57,11 +58,11 @@ public class Note {
         this.mMood = mMood;
     }
 
-    public String[] getLocalImage() {
+    public ArrayList<String> getLocalImage() {
         return localImage;
     }
 
-    public void setLocalImage(String[] localImage) {
+    public void setLocalImage(ArrayList<String> localImage) {
         this.localImage = localImage;
     }
 
@@ -109,11 +110,11 @@ public class Note {
         this.date = date;
     }
 
-    public String[] getImage() {
+    public ArrayList<String> getImage() {
         return image;
     }
 
-    public void setImage(String[] image) {
+    public void setImage(ArrayList<String> image) {
         this.image = image;
     }
 

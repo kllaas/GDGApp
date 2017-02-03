@@ -17,15 +17,21 @@
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
+import com.alexey_klimchuk.gdgapp.App;
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
+import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -65,31 +71,62 @@ public class NotesRemoteDataSource implements NotesDataSource {
         return INSTANCE;
     }
 
-    public static void loadImage(final Note note, final LoadImageCallback imageLoadedListener) {
-       /* final long ONE_MEGABYTE = 1024 * 1024;
+    public static void loadImages(final ArrayList<Note> notes, final int currentItem, final LoadImageCallback imageLoadedListener) {
+        final int nextItem = currentItem + 1;
+
+        loadImagesFromNote(notes, currentItem, 0, new LoadImageCallback() {
+            @Override
+            public void onImagesLoaded(ArrayList<Note> notes, Bitmap bitmap) {
+
+                Log.d("Loading image", "note loaded: " + currentItem);
+
+                if (nextItem == notes.size()) {
+                    imageLoadedListener.onImagesLoaded(notes, bitmap);
+                } else {
+                    loadImages(notes, nextItem, imageLoadedListener);
+                }
+            }
+
+            @Override
+            public void onImageNotAvailable() {
+
+            }
+        });
+    }
+
+    private static void loadImagesFromNote(final ArrayList<Note> notes, final int noteItem, final int currentItem, final LoadImageCallback imageLoadedListener) {
+        final long ONE_MEGABYTE = 1024 * 1024;
         StorageReference storageRef = FirebaseStorage.getInstance()
                 .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
 
-        StorageReference imagesRef = storageRef.child(note.getId() + ".jpg");
+        StorageReference imagesRef = storageRef.child(notes.get(noteItem).getId() + ".jpg");
+
+        final int nextItem = currentItem + 1;
         imagesRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
                 try {
+                    Log.d("Loading image", "note: " + noteItem + ", image:" + currentItem);
+
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    note.setLocalImage(BitmapUtils.createImageFile(bmp, false));
-                    imageLoadedListener.onImageLoaded(note, bmp);
-                } catch (IOException e) {
+                    notes.get(noteItem).getLocalImage().add(BitmapUtils.createImageFile(bmp, false));
+
+                    if (nextItem == notes.get(noteItem).getImage().size())
+                        imageLoadedListener.onImagesLoaded(notes, bmp);
+                    else {
+                        loadImagesFromNote(notes, noteItem, nextItem, imageLoadedListener);
+                    }
+
+                } catch (Exception e) {
                     e.printStackTrace();
-                    imageLoadedListener.onImageNotAvailable();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 Log.d("Loading image: ", exception.getMessage());
-                imageLoadedListener.onImageNotAvailable();
             }
-        });*/
+        });
     }
 
     /**
@@ -111,6 +148,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
                             Map<String, Note> notes = dataSnapshot.getValue(t);
                             ArrayList list = new ArrayList<Note>(notes.values());
                             Collections.sort(list, new CustomComparator());
+
                             callback.onNotesLoaded(list);
                         } catch (Exception e) {
                             callback.onDataNotAvailable();
@@ -150,8 +188,8 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> bitmap, final SaveNoteCallback callback) {
-        /*mDatabase.child(Constants.Firebase.USERS_FOLDER)
+    public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> bitmaps, final SaveNoteCallback callback) {
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
                 .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
                 .child(Constants.Firebase.NOTES_FOLDER)
                 .child(note.getId())
@@ -160,8 +198,8 @@ public class NotesRemoteDataSource implements NotesDataSource {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            if (bitmap != null) {
-                                saveImage(bitmap, note.getId(), callback);
+                            if (bitmaps != null) {
+                                saveImages(0, bitmaps, note.getId(), callback);
                             } else {
                                 callback.onNoteSaved();
                             }
@@ -169,7 +207,57 @@ public class NotesRemoteDataSource implements NotesDataSource {
                             callback.onError();
                         }
                     }
-                });*/
+                });
+    }
+
+    @Override
+    public void saveNotes(final int currentIndex, final ArrayList<Note> notes, final ArrayList<Bitmap> bitmaps, final SaveNoteCallback callback) {
+        final int nextIndex = currentIndex + 1;
+
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER)
+                .child(notes.get(currentIndex).getId())
+                .setValue(notes.get(currentIndex))
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+                            if (bitmaps != null) {
+                                if (!notes.get(currentIndex).getLocalImage().get(0).equals("")) {
+                                    saveImages(0, bitmaps, notes.get(currentIndex).getId(), new SaveNoteCallback() {
+                                        @Override
+                                        public void onNoteSaved() {
+                                            saveNextNote(nextIndex, notes, callback);
+
+                                            Log.d("SettingsPres", "note saved: " + currentIndex);
+                                        }
+
+                                        @Override
+                                        public void onError() {
+                                        }
+                                    });
+                                } else {
+                                    saveNextNote(nextIndex, notes, callback);
+                                }
+                            } else {
+                                callback.onNoteSaved();
+                            }
+                        } else {
+                            callback.onError();
+                        }
+                    }
+                });
+    }
+
+    private void saveNextNote(int nextIndex, ArrayList<Note> notes, SaveNoteCallback callback) {
+        if (nextIndex == notes.size())
+            callback.onNoteSaved();
+        else
+            saveNotes(nextIndex, notes,
+                    BitmapUtils.getBitmapsFromURIs(notes.get(nextIndex).getLocalImage(),
+                            App.getAppContext(), false), callback);
     }
 
     @Override
@@ -198,14 +286,18 @@ public class NotesRemoteDataSource implements NotesDataSource {
 
     }
 
-    private void saveImage(final Bitmap image, final String noteId, final SaveNoteCallback callback) {
-        StorageReference imageRef = storageRef.child(noteId + ".jpg");
+    private void saveImages(final int currentIndex, final ArrayList<Bitmap> images, final String noteId, final SaveNoteCallback callback) {
+        final StorageReference imageRef = storageRef.child(noteId + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        image.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        images.get(currentIndex).compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] data = baos.toByteArray();
 
         UploadTask uploadTask = imageRef.putBytes(data);
+
+
+        final int nextIndex = currentIndex + 1;
+
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -222,9 +314,15 @@ public class NotesRemoteDataSource implements NotesDataSource {
                         .child(Constants.Firebase.NOTES_FOLDER)
                         .child(noteId)
                         .child(Constants.Firebase.IMAGES_FOLDER)
+                        .child(currentIndex + "")
                         .setValue(downloadUrl.toString());
 
-                callback.onNoteSaved();
+                Log.d("SettingsPres", "image saved: " + currentIndex);
+
+                if (nextIndex == images.size())
+                    callback.onNoteSaved();
+                else
+                    saveImages(nextIndex, images, noteId, callback);
             }
         });
     }

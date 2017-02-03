@@ -29,6 +29,7 @@ import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -56,24 +57,24 @@ public class NotesLocalDataSource implements NotesDataSource {
         return INSTANCE;
     }
 
-    private static String convertArrayToString(String[] array) {
+    private static String convertArrayToString(ArrayList<String> array) {
         if (array == null) {
             return "";
         }
         String str = "";
-        for (int i = 0; i < array.length; i++) {
-            str = str + array[i];
-            // Do not append comma at the end of last element
-            if (i < array.length - 1) {
+        for (int i = 0; i < array.size(); i++) {
+            str = str + array.get(i);
+            // Do not append comma a the end of last element
+            if (i < array.size() - 1) {
                 str = str + strSeparator;
             }
         }
         return str;
     }
 
-    private static String[] convertStringToArray(String str) {
+    private static ArrayList<String> convertStringToArray(String str) {
         String[] arr = str.split(strSeparator);
-        return arr;
+        return new ArrayList<String>(Arrays.asList(arr));
     }
 
     /**
@@ -195,7 +196,7 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
-        values.put(NoteEntry.NAME_COLUMN, note.getContent());
+        values.put(NoteEntry.NAME_COLUMN, note.getName());
         values.put(NoteEntry.CONTENT_COLUMN, note.getContent());
         values.put(NoteEntry.IMAGE_COLUMN, convertArrayToString(note.getImage()));
         values.put(NoteEntry.DATE_COLUMN, note.getDate());
@@ -221,7 +222,7 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
-        values.put(NoteEntry.NAME_COLUMN, note.getContent());
+        values.put(NoteEntry.NAME_COLUMN, note.getName());
         values.put(NoteEntry.CONTENT_COLUMN, note.getContent());
         values.put(NoteEntry.IMAGE_COLUMN, convertArrayToString(note.getImage()));
         values.put(NoteEntry.DATE_COLUMN, note.getDate());
@@ -235,6 +236,11 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         if (callback != null)
             callback.onNoteSaved();
+    }
+
+    @Override
+    public void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback) {
+
     }
 
     @Override

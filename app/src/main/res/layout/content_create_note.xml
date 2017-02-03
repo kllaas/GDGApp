@@ -7,7 +7,7 @@
     android:paddingEnd="@dimen/medium_margin"
     android:paddingStart="@dimen/medium_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".create_note.CreateNoteActivity"
+    tools:context=".activities.create_note.CreateNoteActivity"
     tools:showIn="@layout/activity_create_note">
 
     <RelativeLayout
@@ -16,26 +16,27 @@
         android:paddingBottom="@dimen/large_margin"
         android:paddingTop="28dp">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/preview_recview"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/preview_images_height" />
-
         <EditText
             android:id="@+id/edit_text_name_create"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/preview_recview"
             android:hint="@string/note_name"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/large_text_size" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/preview_recview"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/preview_images_height"
+            android:layout_below="@id/edit_text_name_create"
+            android:layout_marginTop="@dimen/medium_margin" />
 
         <TextView
             android:id="@+id/text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/edit_text_name_create"
+            android:layout_below="@+id/preview_recview"
             android:layout_marginTop="@dimen/medium_margin"
             android:text="@string/how_are_you"
             android:textSize="@dimen/medium_text_size" />

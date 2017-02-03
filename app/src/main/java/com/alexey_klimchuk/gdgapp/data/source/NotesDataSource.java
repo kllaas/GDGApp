@@ -41,6 +41,8 @@ public interface NotesDataSource {
 
     void saveNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback);
 
+    void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback);
+
     void editNote(@NonNull Note note, ArrayList<Bitmap> image, SaveNoteCallback callback);
 
     void refreshNotes();
@@ -60,7 +62,7 @@ public interface NotesDataSource {
 
     interface LoadImageCallback {
 
-        void onImageLoaded(Note note, Bitmap bitmap);
+        void onImagesLoaded(ArrayList<Note> note, Bitmap bitmap);
 
         void onImageNotAvailable();
     }

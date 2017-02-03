@@ -126,22 +126,29 @@ public class NotesRepository implements NotesDataSource {
         });
     }
 
+    public void saveNotes(ArrayList<Note> notes, SaveNoteCallback callback) {
+        for (Note note : notes) {
+            saveNote(note, null, null);
+        }
+
+        callback.onNoteSaved();
+    }
+
     @Override
     public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> images,
                          final SaveNoteCallback callback) {
-        String[] localImages = new String[images.size()];
+        if (images != null) {
+            ArrayList<String> localImages = new ArrayList<>();
 
-        int i = 0;
-        for (Bitmap bitmap : images) {
-            try {
-                localImages[i] = BitmapUtils.createImageFile(bitmap, true);
-                i++;
-            } catch (Exception ignored) {
+            for (Bitmap bitmap : images) {
+                try {
+                    localImages.add(BitmapUtils.createImageFile(bitmap, true));
+                } catch (Exception ignored) {
+                }
             }
 
+            note.setLocalImage(localImages);
         }
-
-        note.setLocalImage(localImages);
 
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
@@ -155,11 +162,16 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
+    public void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback) {
+
+    }
+
+    @Override
     public void editNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback) {
         //Delete old images
-        for (int i = 0; i < note.getLocalImage().length; i++) {
-            if (note.getLocalImage()[i] != null) {
-                BitmapUtils.deleteImageFile(note.getLocalImage()[i]);
+        for (int i = 0; i < note.getLocalImage().size(); i++) {
+            if (note.getLocalImage().get(i) != null) {
+                BitmapUtils.deleteImageFile(note.getLocalImage().get(i));
             }
         }
 
@@ -175,10 +187,7 @@ public class NotesRepository implements NotesDataSource {
             }
         }
 
-        String[] imageArray = new String[localImages.size()];
-        localImages.toArray(imageArray);
-
-        note.setLocalImage(imageArray);
+        note.setLocalImage(localImages);
 
         mNotesLocalDataSource.editNote(note, images, callback);
 
@@ -267,10 +276,11 @@ public class NotesRepository implements NotesDataSource {
         });
     }
 
-    private void getNotesFromRemoteDataSource(@NonNull final LoadNotesCallback callback) {
+    public void getNotesFromRemoteDataSource(@NonNull final LoadNotesCallback callback) {
         mNotesRemoteDataSource.getNotes(new LoadNotesCallback() {
             @Override
             public void onNotesLoaded(List<Note> notes) {
+                notes = removeLocalReferences(new ArrayList<>(notes));
                 refreshCache(notes);
                 refreshLocalDataSource(notes);
                 callback.onNotesLoaded(new ArrayList<>(mCachedNotes.values()));
@@ -281,6 +291,14 @@ public class NotesRepository implements NotesDataSource {
                 callback.onDataNotAvailable();
             }
         });
+    }
+
+    private ArrayList<Note> removeLocalReferences(ArrayList<Note> notes) {
+        for (Note note : notes) {
+            note.setLocalImage(new ArrayList<String>());
+        }
+
+        return notes;
     }
 
     private void refreshCache(List<Note> notes) {
@@ -309,4 +327,10 @@ public class NotesRepository implements NotesDataSource {
             return mCachedNotes.get(id);
         }
     }
+
+    public void saveNotesRemote(ArrayList<Note> notes, SaveNoteCallback callback) {
+        mNotesRemoteDataSource.saveNotes(0, notes, BitmapUtils.getBitmapsFromURIs(notes.get(0).getLocalImage(), context, false), callback);
+    }
+
+
 }

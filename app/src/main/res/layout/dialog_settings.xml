@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/medium_margin"
+    android:paddingTop="24dp">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="@dimen/medium_margin"
+        android:layout_toStartOf="@+id/buttonLoadTo"
+        android:text="@string/text_load_on_server_details" />
+
+    <com.rey.material.widget.Button
+        android:id="@+id/buttonLoadTo"
+        style="@style/Material.Drawable.Ripple.Touch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:text="Go!"
+        android:textColor="@color/colorWhite"
+        app:rd_enable="true"
+        app:rd_rippleColor="@color/colorPrimaryDark" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textView2"
+        android:layout_marginEnd="@dimen/medium_margin"
+        android:layout_marginTop="@dimen/large_margin"
+        android:layout_toStartOf="@+id/buttonLoadFrom"
+        android:text="@string/text_load_from_server_details" />
+
+    <com.rey.material.widget.Button
+        android:id="@+id/buttonLoadFrom"
+        style="@style/Material.Drawable.Ripple.Touch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/textView3"
+        android:layout_below="@id/buttonLoadTo"
+        android:background="@color/colorPrimary"
+        android:text="Load IT"
+        android:textColor="@color/colorWhite"
+        app:rd_enable="true"
+        app:rd_rippleColor="@color/colorPrimaryDark" />
+
+
+    <com.rey.material.widget.ProgressView
+        android:id="@+id/progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_below="@id/textView3"
+        android:layout_marginTop="@dimen/large_margin"
+        android:visibility="gone"
+        app:pv_autostart="true"
+        app:pv_circular="false"
+        app:pv_progressMode="indeterminate"
+        app:pv_progressStyle="@style/Material.Drawable.LinearProgress" />
+</RelativeLayout>

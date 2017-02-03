@@ -12,37 +12,37 @@
         android:paddingBottom="@dimen/large_margin"
         android:paddingTop="28dp">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/preview_recview"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/preview_images_height"
-            android:layout_alignParentTop="true" />
-
         <View
             android:id="@+id/mood_icon"
             android:layout_width="@dimen/detail_mood_size"
             android:layout_height="@dimen/detail_mood_size"
             android:layout_alignParentStart="true"
-            android:layout_below="@id/preview_recview"
-            android:layout_marginTop="@dimen/medium_margin"
+            android:layout_alignParentTop="true"
             android:background="@drawable/mood_state" />
 
         <TextView
             android:id="@+id/text_view_name_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:layout_below="@id/preview_recview"
             android:layout_marginStart="@dimen/small_margin"
-            android:layout_marginTop="@dimen/medium_margin"
             android:layout_toEndOf="@+id/mood_icon"
             android:textColor="@color/colorBlack"
             android:textSize="@dimen/large_text_size" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/preview_recview"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/preview_images_height"
+            android:layout_below="@id/mood_icon"
+            android:layout_marginTop="@dimen/large_margin" />
 
         <TextView
             android:id="@+id/text_view_date_details"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/text_view_name_details"
+            android:layout_below="@id/preview_recview"
             android:layout_marginTop="@dimen/medium_margin"
             android:textSize="@dimen/small_text_size" />
 

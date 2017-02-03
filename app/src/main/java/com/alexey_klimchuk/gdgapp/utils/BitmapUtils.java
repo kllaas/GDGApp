@@ -36,6 +36,18 @@ public class BitmapUtils {
         return BitmapFactory.decodeStream(c.getContentResolver().openInputStream(uri), null, finalOptions);
     }
 
+    public static Bitmap resizeImage(Bitmap realImage, int maxImageSize) {
+        float ratio = Math.min(
+                (float) maxImageSize / realImage.getWidth(),
+                (float) maxImageSize / realImage.getHeight());
+        int width = Math.round(ratio * realImage.getWidth());
+        int height = Math.round(ratio * realImage.getHeight());
+
+        return Bitmap.createScaledBitmap(realImage, width,
+                height, false);
+    }
+
+
     public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
@@ -88,7 +100,7 @@ public class BitmapUtils {
         }
     }
 
-    public static ArrayList<Bitmap> getBitmapsFromURIs(String[] images, Context context, boolean shouldResize) {
+    public static ArrayList<Bitmap> getBitmapsFromURIs(ArrayList<String> images, Context context, boolean shouldResize) {
         ArrayList<Bitmap> bitmaps = new ArrayList<>();
 
         for (String image : images) {
