@@ -99,7 +99,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
         StorageReference storageRef = FirebaseStorage.getInstance()
                 .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
 
-        StorageReference imagesRef = storageRef.child(notes.get(noteItem).getId() + ".jpg");
+        StorageReference imagesRef = storageRef.child(notes.get(noteItem).getId() + currentItem + ".jpg");
 
         final int nextItem = currentItem + 1;
         imagesRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -273,11 +273,28 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     @Override
-    public void deleteAllNotes() {
+    public void deleteAllNotes(final DeleteNoteCallback callback) {
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                callback.onNoteDeleted();
+            }
+        });
     }
 
     @Override
-    public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
+    public void deleteNote(@NonNull String noteId, final DeleteNoteCallback callback) {
+        mDatabase.child(Constants.Firebase.USERS_FOLDER)
+                .child(mAuth.getCurrentUser().getEmail().replaceAll("\\.", ""))
+                .child(Constants.Firebase.NOTES_FOLDER)
+                .child(noteId).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                callback.onNoteDeleted();
+            }
+        });
 
     }
 
@@ -287,7 +304,7 @@ public class NotesRemoteDataSource implements NotesDataSource {
     }
 
     private void saveImages(final int currentIndex, final ArrayList<Bitmap> images, final String noteId, final SaveNoteCallback callback) {
-        final StorageReference imageRef = storageRef.child(noteId + ".jpg");
+        final StorageReference imageRef = storageRef.child(noteId + currentIndex + ".jpg");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         images.get(currentIndex).compress(Bitmap.CompressFormat.JPEG, 100, baos);

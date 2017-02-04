@@ -47,7 +47,7 @@ public interface NotesDataSource {
 
     void refreshNotes();
 
-    void deleteAllNotes();
+    void deleteAllNotes(DeleteNoteCallback callback);
 
     void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback);
 

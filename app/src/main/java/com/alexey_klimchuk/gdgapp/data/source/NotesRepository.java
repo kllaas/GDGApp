@@ -239,14 +239,16 @@ public class NotesRepository implements NotesDataSource {
     }
 
     @Override
-    public void deleteAllNotes() {
-        mNotesRemoteDataSource.deleteAllNotes();
-        mNotesLocalDataSource.deleteAllNotes();
+    public void deleteAllNotes(DeleteNoteCallback callback) {
+        mNotesRemoteDataSource.deleteAllNotes(null);
+        mNotesLocalDataSource.deleteAllNotes(null);
 
         if (mCachedNotes == null) {
             mCachedNotes = new LinkedHashMap<>();
         }
         mCachedNotes.clear();
+
+        callback.onNoteDeleted();
     }
 
     @Override
@@ -313,7 +315,7 @@ public class NotesRepository implements NotesDataSource {
     }
 
     private void refreshLocalDataSource(List<Note> notes) {
-        mNotesLocalDataSource.deleteAllNotes();
+        mNotesLocalDataSource.deleteAllNotes(null);
         for (Note note : notes) {
             mNotesLocalDataSource.saveNote(note, null, null);
         }
@@ -328,9 +330,17 @@ public class NotesRepository implements NotesDataSource {
         }
     }
 
-    public void saveNotesRemote(ArrayList<Note> notes, SaveNoteCallback callback) {
-        mNotesRemoteDataSource.saveNotes(0, notes, BitmapUtils.getBitmapsFromURIs(notes.get(0).getLocalImage(), context, false), callback);
+    public void saveNotesRemote(final ArrayList<Note> notes, final SaveNoteCallback callback) {
+        mNotesRemoteDataSource.deleteAllNotes(new DeleteNoteCallback() {
+            @Override
+            public void onNoteDeleted() {
+                mNotesRemoteDataSource.saveNotes(0, notes, BitmapUtils.getBitmapsFromURIs(notes.get(0).getLocalImage(), context, false), callback);
+            }
+
+            @Override
+            public void onError() {
+                callback.onError();
+            }
+        });
     }
-
-
 }

@@ -250,7 +250,7 @@ public class NotesLocalDataSource implements NotesDataSource {
     }
 
     @Override
-    public void deleteAllNotes() {
+    public void deleteAllNotes(DeleteNoteCallback callback) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         db.delete(NoteEntry.TABLE_NAME, null, null);

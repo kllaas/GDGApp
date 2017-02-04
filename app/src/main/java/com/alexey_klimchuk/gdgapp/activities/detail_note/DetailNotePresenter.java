@@ -32,6 +32,7 @@ public class DetailNotePresenter implements DetailNoteRelations.Presenter {
 
     public DetailNotePresenter(DetailNoteRelations.View view) {
         mView = view;
+        CacheUtils.tempBitmaps.clear();
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(mView.getActivity()),
                 NotesRemoteDataSource.getInstance(), mView.getActivity());
     }

@@ -34,6 +34,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
 
     public EditNotePresenter(EditNoteActivity activity) {
         mView = activity;
+        CacheUtils.tempBitmaps.clear();
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
                 NotesRemoteDataSource.getInstance(), mView.getActivity());
     }
@@ -50,6 +51,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
             @Override
             public void onNoteSaved() {
                 if (oneWaySaved) {
+                    CacheUtils.tempBitmaps.clear();
                     mView.hideProgressDialog();
                     mView.saveResult();
                 } else {

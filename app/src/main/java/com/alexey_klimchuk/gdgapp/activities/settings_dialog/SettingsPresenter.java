@@ -37,7 +37,8 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
 
         mNotesRepository.getNotes(new NotesDataSource.LoadNotesCallback() {
             @Override
-            public void onNotesLoaded(final List<Note> notes) {
+            public void onNotesLoaded(List<Note> notes) {
+                notes = removeRemoteReferences(new ArrayList<>(notes));
                 mNotesRepository.saveNotesRemote(new ArrayList<>(notes), new NotesDataSource.SaveNoteCallback() {
                     @Override
                     public void onNoteSaved() {
@@ -62,6 +63,14 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
                 handleDataNotAvailable();
             }
         });
+    }
+
+    private ArrayList<Note> removeRemoteReferences(ArrayList<Note> notes) {
+        for (Note note : notes) {
+            note.setImage(new ArrayList<String>());
+        }
+
+        return notes;
     }
 
     @Override
