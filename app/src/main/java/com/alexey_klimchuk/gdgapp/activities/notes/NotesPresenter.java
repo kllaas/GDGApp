@@ -1,9 +1,10 @@
 package com.alexey_klimchuk.gdgapp.activities.notes;
 
+import android.content.DialogInterface;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 
-import com.alexey_klimchuk.gdgapp.activities.settings_dialog.SettingsDialogFragment;
 import com.alexey_klimchuk.gdgapp.adapters.RecyclerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
@@ -64,9 +65,21 @@ public class NotesPresenter implements NotesRelations.Presenter {
     }
 
     @Override
-    public void crateSettingsDialog() {
+    public void crateSettingsDialog() {/*
         SettingsDialogFragment dialog = new SettingsDialogFragment();
-        dialog.show(mView.getActivity().getSupportFragmentManager(), "SettingsDialogFragment");
+        dialog.show(mView.getActivity().getSupportFragmentManager(), "SettingsDialogFragment");*/
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(mView.getActivity());
+        builder.setTitle("Sorry!")
+                .setMessage("This function is in development ;)")
+                .setNegativeButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     @Override
