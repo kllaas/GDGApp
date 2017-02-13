@@ -53,14 +53,12 @@ public class NotesRepository implements NotesDataSource {
      * has package local visibility so it can be accessed from tests.
      */
     boolean mCacheIsDirty = false;
-    private Context context;
 
     // Prevent direct instantiation.
     private NotesRepository(@NonNull NotesDataSource notesRemoteDataSource,
-                            @NonNull NotesDataSource notesLocalDataSource, Context context) {
+                            @NonNull NotesDataSource notesLocalDataSource) {
         mNotesRemoteDataSource = notesRemoteDataSource;
         mNotesLocalDataSource = notesLocalDataSource;
-        this.context = context;
     }
 
     /**
@@ -71,15 +69,15 @@ public class NotesRepository implements NotesDataSource {
      * @return the {@link NotesRepository} instance
      */
     public static NotesRepository getInstance(NotesDataSource notesRemoteDataSource,
-                                              NotesDataSource notesLocalDataSource, Context context) {
+                                              NotesDataSource notesLocalDataSource) {
         if (INSTANCE == null) {
-            INSTANCE = new NotesRepository(notesRemoteDataSource, notesLocalDataSource, context);
+            INSTANCE = new NotesRepository(notesRemoteDataSource, notesLocalDataSource);
         }
         return INSTANCE;
     }
 
     /**
-     * Used to force {@link #getInstance(NotesDataSource, NotesDataSource, Context)} to create a new instance
+     * Used to force {@link #getInstance(NotesDataSource, NotesDataSource)} to create a new instance
      * next time it's called.
      */
     public static void destroyInstance() {
@@ -330,7 +328,7 @@ public class NotesRepository implements NotesDataSource {
         }
     }
 
-    public void saveNotesRemote(final ArrayList<Note> notes, final SaveNoteCallback callback) {
+    public void saveNotesRemote(final ArrayList<Note> notes, final Context context, final SaveNoteCallback callback) {
         mNotesRemoteDataSource.deleteAllNotes(new DeleteNoteCallback() {
             @Override
             public void onNoteDeleted() {

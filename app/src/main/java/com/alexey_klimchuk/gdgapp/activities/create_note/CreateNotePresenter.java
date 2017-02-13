@@ -16,8 +16,6 @@ import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
-import java.util.UUID;
-
 /**
  * Created by Alexey on 24.09.2016.
  */
@@ -29,20 +27,17 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     private NotesRepository mNotesRepository;
     private PreviewEditImageAdapter mPreviewAdapter;
 
-    private String noteId;
-
     public CreateNotePresenter(CreateNoteActivity activity) {
         mView = activity;
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
-                NotesRemoteDataSource.getInstance(), mView.getActivity());
-        noteId = UUID.randomUUID().toString();
+                NotesRemoteDataSource.getInstance());
     }
 
     @Override
     public void saveNote(final Note note) {
         mView.showProgressDialog();
 
-        note.setId(noteId);
+        note.setRandomId();
 
         mNotesRepository.saveNote(note, CacheUtils.tempBitmaps.getFullSizeImages(), new NotesDataSource.SaveNoteCallback() {
             @Override

@@ -28,7 +28,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
     public NotesPresenter(NotesRelations.View view) {
         mView = view;
         mNotesRepository = NotesRepository.getInstance(NotesRemoteDataSource.getInstance(),
-                NotesLocalDataSource.getInstance(mView.getActivity()), mView.getActivity());
+                NotesLocalDataSource.getInstance(mView.getActivity()));
     }
 
     @Override

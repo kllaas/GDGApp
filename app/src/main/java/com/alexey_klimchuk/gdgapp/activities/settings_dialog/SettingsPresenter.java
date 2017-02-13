@@ -28,7 +28,7 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
         this.mView = mView;
 
         mNotesRepository = NotesRepository.getInstance(NotesRemoteDataSource.getInstance(),
-                NotesLocalDataSource.getInstance(mView.getActivity()), mView.getActivity());
+                NotesLocalDataSource.getInstance(mView.getActivity()));
     }
 
     @Override
@@ -39,7 +39,7 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
             @Override
             public void onNotesLoaded(List<Note> notes) {
                 notes = removeRemoteReferences(new ArrayList<>(notes));
-                mNotesRepository.saveNotesRemote(new ArrayList<>(notes), new NotesDataSource.SaveNoteCallback() {
+                mNotesRepository.saveNotesRemote(new ArrayList<>(notes), mView.getActivity(), new NotesDataSource.SaveNoteCallback() {
                     @Override
                     public void onNoteSaved() {
 

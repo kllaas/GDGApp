@@ -36,7 +36,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
         mView = activity;
         CacheUtils.tempBitmaps.clear();
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
-                NotesRemoteDataSource.getInstance(), mView.getActivity());
+                NotesRemoteDataSource.getInstance());
     }
 
     @Override

@@ -49,6 +49,7 @@ public class ShowImageFragment extends Fragment {
         mViewPager.setAdapter(adapter);
         mViewPager.setPageMargin(20);
 
+
         return v;
     }
 

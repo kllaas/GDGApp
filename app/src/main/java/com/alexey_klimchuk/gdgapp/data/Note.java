@@ -118,6 +118,10 @@ public class Note {
         this.image = image;
     }
 
+    public void setRandomId() {
+        id = UUID.randomUUID().toString();
+    }
+
     /**
      * Mood states
      */
