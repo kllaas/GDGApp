@@ -11,8 +11,8 @@ import com.alexey_klimchuk.gdgapp.models.TempBitmap;
 
 public class CacheUtils {
 
-    public static LruCache<String, Bitmap> mMemoryCache;
     public static TempBitmap tempBitmaps = new TempBitmap();
+    private static LruCache<String, Bitmap> mMemoryCache;
 
     public static void initCache() {
         final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);

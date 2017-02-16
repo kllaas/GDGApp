@@ -22,7 +22,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.alexey_klimchuk.gdgapp.App;
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
@@ -254,10 +253,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
     private void saveNextNote(int nextIndex, ArrayList<Note> notes, SaveNoteCallback callback) {
         if (nextIndex == notes.size())
             callback.onNoteSaved();
-        else
-            saveNotes(nextIndex, notes,
-                    BitmapUtils.getBitmapsFromURIs(notes.get(nextIndex).getLocalImage(),
-                            App.getAppContext(), false), callback);
+        else {
+        }
+        //TODO rewrite it without static calling of Context
+           /* saveNotes(nextIndex, notes, BitmapUtils.getBitmapsFromURIs(notes.get(nextIndex).getLocalImage(),
+                            App.getAppContext(), false), callback);*/
     }
 
     @Override

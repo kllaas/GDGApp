@@ -1,6 +1,7 @@
 package com.alexey_klimchuk.gdgapp.data;
 
-import com.alexey_klimchuk.gdgapp.App;
+import android.content.res.Resources;
+
 import com.alexey_klimchuk.gdgapp.R;
 
 import java.util.ArrayList;
@@ -135,11 +136,11 @@ public class Note {
         public String toString() {
             switch (this) {
                 case GOOD:
-                    return App.getAppContext().getResources().getString(R.string.mood_good);
+                    return Resources.getSystem().getString(R.string.mood_good);
                 case NORMAL:
-                    return App.getAppContext().getResources().getString(R.string.mood_normal);
+                    return Resources.getSystem().getString(R.string.mood_normal);
                 case BAD:
-                    return App.getAppContext().getResources().getString(R.string.mood_bad);
+                    return Resources.getSystem().getString(R.string.mood_bad);
                 default:
                     return "";
             }

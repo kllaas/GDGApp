@@ -32,6 +32,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alexey_klimchuk.gdgapp.data.source.NotesDataSource.DeleteNoteCallback;
+import static com.alexey_klimchuk.gdgapp.data.source.NotesDataSource.GetNoteCallback;
+import static com.alexey_klimchuk.gdgapp.data.source.NotesDataSource.LoadNotesCallback;
+import static com.alexey_klimchuk.gdgapp.data.source.NotesDataSource.SaveNoteCallback;
+
 /**
  * Concrete implementation to load Notes from the data sources into a cache.
  * <p>
@@ -39,7 +44,7 @@ import java.util.Map;
  * obtained from the server, by using the remote data source only if the local database doesn't
  * exist or is empty.
  */
-public class NotesRepository implements NotesDataSource {
+public class NotesRepository {
 
     /**
      * This variable has package local visibility so it can be accessed from tests.
@@ -85,7 +90,9 @@ public class NotesRepository implements NotesDataSource {
     }
 
     public static List<Note> getCachedNotesList() {
-        return new ArrayList<>(mCachedNotes.values());
+        if (mCachedNotes != null)
+            return new ArrayList<>(mCachedNotes.values());
+        else return new ArrayList<>();
     }
 
     public static Map<String, Note> getCachedNotesMap() {
@@ -99,7 +106,6 @@ public class NotesRepository implements NotesDataSource {
      * Note: {@link LoadNotesCallback#onDataNotAvailable()} is fired if all data sources fail to
      * get the data.
      */
-    @Override
     public void getNotes(@NonNull final LoadNotesCallback callback) {
 
         // Respond immediately with cache if available and not dirty
@@ -132,7 +138,6 @@ public class NotesRepository implements NotesDataSource {
         callback.onNoteSaved();
     }
 
-    @Override
     public void saveNote(@NonNull final Note note, final ArrayList<Bitmap> images,
                          final SaveNoteCallback callback) {
         if (images != null) {
@@ -159,12 +164,6 @@ public class NotesRepository implements NotesDataSource {
         mNotesLocalDataSource.saveNote(note, images, callback);
     }
 
-    @Override
-    public void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback) {
-
-    }
-
-    @Override
     public void editNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback) {
         //Delete old images
         for (int i = 0; i < note.getLocalImage().size(); i++) {
@@ -204,7 +203,6 @@ public class NotesRepository implements NotesDataSource {
      * Note: {@link LoadNotesCallback#onDataNotAvailable()} is fired if both data sources fail to
      * get the data.
      */
-    @Override
     public void getNote(@NonNull final String noteId, @NonNull final GetNoteCallback callback) {
 
         final Note cachedNote = getNoteWithId(noteId);
@@ -231,12 +229,10 @@ public class NotesRepository implements NotesDataSource {
         });
     }
 
-    @Override
     public void refreshNotes() {
         mCacheIsDirty = true;
     }
 
-    @Override
     public void deleteAllNotes(DeleteNoteCallback callback) {
         mNotesRemoteDataSource.deleteAllNotes(null);
         mNotesLocalDataSource.deleteAllNotes(null);
@@ -249,7 +245,6 @@ public class NotesRepository implements NotesDataSource {
         callback.onNoteDeleted();
     }
 
-    @Override
     public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
         mNotesLocalDataSource.deleteNote(NoteId, callback);
 
@@ -260,7 +255,6 @@ public class NotesRepository implements NotesDataSource {
         }
     }
 
-    @Override
     public void getNotesByDate(Date date, final LoadNotesCallback callback) {
         mNotesLocalDataSource.getNotesByDate(date, new LoadNotesCallback() {
             @Override

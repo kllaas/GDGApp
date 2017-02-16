@@ -40,8 +40,9 @@ public class SearchDialogFragment extends DialogFragment {
         final View v = inflater.inflate(R.layout.dialog_search, null);
         calendarView = (MaterialCalendarView) v.findViewById(R.id.calendar);
 
-        calendarView.addDecorator(new EventDecorator(getActivity().getResources().getColor((R.color.colorPrimary)),
-                getCalendarDays(NotesRepository.getCachedNotesList())));
+        if (NotesRepository.getCachedNotesList().size() > 0)
+            calendarView.addDecorator(new EventDecorator(getActivity().getResources().getColor((R.color.colorPrimary)),
+                    getCalendarDays(NotesRepository.getCachedNotesList())));
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         builder.setView(v).
