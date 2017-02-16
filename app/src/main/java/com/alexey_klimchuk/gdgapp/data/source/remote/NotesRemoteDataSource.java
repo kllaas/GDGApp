@@ -17,43 +17,65 @@
 package com.alexey_klimchuk.gdgapp.data.source.remote;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
-import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
-import com.alexey_klimchuk.gdgapp.utils.CustomComparator;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
+
+import rx.Observable;
 
 /**
  * Implementation of the data source that adds a latency simulating network.
  */
 public class NotesRemoteDataSource implements NotesDataSource {
-
     private static NotesRemoteDataSource INSTANCE;
+
+    public static NotesRemoteDataSource getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new NotesRemoteDataSource();
+        }
+        return INSTANCE;
+    }
+
+    @Override
+    public Observable<List<Note>> getNotes() {
+        return null;
+    }
+
+    @Override
+    public Observable<Note> getNote(@NonNull String NoteId) {
+        return null;
+    }
+
+    @Override
+    public void saveNote(@NonNull Note note) {
+
+    }
+
+    @Override
+    public void editNote(@NonNull Note note, ArrayList<Bitmap> image) {
+
+    }
+
+    @Override
+    public void deleteAllNotes() {
+
+    }
+
+    @Override
+    public void deleteNote(@NonNull String NoteId) {
+
+    }
+
+    @Override
+    public Observable<List<Note>> getNotesByDate(Date date) {
+        return null;
+    }
+/*
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private StorageReference storageRef = FirebaseStorage.getInstance()
             .getReferenceFromUrl(Constants.Firebase.USERS_DB_URL).child(Constants.Firebase.IMAGES_FOLDER);
@@ -63,12 +85,6 @@ public class NotesRemoteDataSource implements NotesDataSource {
     private NotesRemoteDataSource() {
     }
 
-    public static NotesRemoteDataSource getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new NotesRemoteDataSource();
-        }
-        return INSTANCE;
-    }
 
     public static void loadImages(final ArrayList<Note> notes, final int currentItem, final LoadImageCallback imageLoadedListener) {
         final int nextItem = currentItem + 1;
@@ -128,11 +144,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
         });
     }
 
-    /**
+    *//**
      * Note: {@link LoadNotesCallback#onDataNotAvailable()} is never fired. In a real remote data
      * source implementation, this would be fired if the server can't be contacted or the server
      * returns an error.
-     */
+     *//*
     @Override
     public void getNotes(final @NonNull LoadNotesCallback callback) {
         mDatabase.child(Constants.Firebase.USERS_FOLDER)
@@ -161,11 +177,11 @@ public class NotesRemoteDataSource implements NotesDataSource {
                 });
     }
 
-    /**
+    *//**
      * Note: {@link GetNoteCallback#onDataNotAvailable()} is never fired. In a real remote data
      * source implementation, this would be fired if the server can't be contacted or the server
      * returns an error.
-     */
+     *//*
     @Override
     public void getNote(@NonNull String noteId, final @NonNull GetNoteCallback callback) {
         mDatabase.child(Constants.Firebase.USERS_FOLDER)
@@ -256,8 +272,8 @@ public class NotesRemoteDataSource implements NotesDataSource {
         else {
         }
         //TODO rewrite it without static calling of Context
-           /* saveNotes(nextIndex, notes, BitmapUtils.getBitmapsFromURIs(notes.get(nextIndex).getLocalImage(),
-                            App.getAppContext(), false), callback);*/
+           *//* saveNotes(nextIndex, notes, BitmapUtils.getBitmapsFromURIs(notes.get(nextIndex).getLocalImage(),
+                            App.getAppContext(), false), callback);*//*
     }
 
     @Override
@@ -342,5 +358,5 @@ public class NotesRemoteDataSource implements NotesDataSource {
                     saveImages(nextIndex, images, noteId, callback);
             }
         });
-    }
+    }*/
 }

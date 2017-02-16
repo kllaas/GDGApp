@@ -22,8 +22,9 @@ import android.support.annotation.NonNull;
 import com.alexey_klimchuk.gdgapp.data.Note;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+
+import rx.Observable;
 
 /**
  * Main entry point for accessing Notes data.
@@ -35,56 +36,18 @@ import java.util.List;
  */
 public interface NotesDataSource {
 
-    void getNotes(@NonNull LoadNotesCallback callback);
+    Observable<List<Note>> getNotes();
 
-    void getNote(@NonNull String NoteId, @NonNull GetNoteCallback callback);
+    Observable<Note> getNote(@NonNull String NoteId);
 
-    void saveNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback);
+    void saveNote(@NonNull Note note);
 
-    void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback);
+    void editNote(@NonNull Note note, ArrayList<Bitmap> image);
 
-    void editNote(@NonNull Note note, ArrayList<Bitmap> image, SaveNoteCallback callback);
+    void deleteAllNotes();
 
-    void refreshNotes();
+    void deleteNote(@NonNull String NoteId);
 
-    void deleteAllNotes(DeleteNoteCallback callback);
+//    Observable<List<Note>> getNotesByDate(Date date);
 
-    void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback);
-
-    void getNotesByDate(Date date, LoadNotesCallback loadNotesCallback);
-
-    interface LoadNotesCallback {
-
-        void onNotesLoaded(List<Note> Notes);
-
-        void onDataNotAvailable();
-    }
-
-    interface LoadImageCallback {
-
-        void onImagesLoaded(ArrayList<Note> note, Bitmap bitmap);
-
-        void onImageNotAvailable();
-    }
-
-    interface GetNoteCallback {
-
-        void onNoteLoaded(Note note);
-
-        void onDataNotAvailable();
-    }
-
-    interface SaveNoteCallback {
-
-        void onNoteSaved();
-
-        void onError();
-    }
-
-    interface DeleteNoteCallback {
-
-        void onNoteDeleted();
-
-        void onError();
-    }
 }

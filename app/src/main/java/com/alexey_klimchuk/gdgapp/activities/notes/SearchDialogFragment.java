@@ -2,7 +2,6 @@ package com.alexey_klimchuk.gdgapp.activities.notes;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -43,23 +42,15 @@ public class SearchDialogFragment extends DialogFragment {
         if (NotesRepository.getCachedNotesList().size() > 0)
             calendarView.addDecorator(new EventDecorator(getActivity().getResources().getColor((R.color.colorPrimary)),
                     getCalendarDays(NotesRepository.getCachedNotesList())));
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
+
         builder.setView(v).
-                setPositiveButton(R.string.search, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        if (calendarView.getSelectedDate() != null) {
-                            mListener.onDialogPositiveClick(calendarView.getSelectedDate().getDate());
-                        } else {
-                            Toast.makeText(getContext(), R.string.should_select_date_message, Toast.LENGTH_SHORT).show();
-                        }
+                setPositiveButton(R.string.search, (dialog, id) -> {
+                    if (calendarView.getSelectedDate() != null) {
+                        mListener.onDialogPositiveClick(calendarView.getSelectedDate().getDate());
+                    } else {
+                        Toast.makeText(getContext(), R.string.should_select_date_message, Toast.LENGTH_SHORT).show();
                     }
-                }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                SearchDialogFragment.this.getDialog().cancel();
-            }
-        });
+                }).setNegativeButton(R.string.cancel, (dialog, id) -> SearchDialogFragment.this.getDialog().cancel());
 
         return builder.create();
     }

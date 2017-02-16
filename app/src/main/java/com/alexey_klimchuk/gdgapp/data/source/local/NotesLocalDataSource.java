@@ -22,18 +22,25 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
-import com.alexey_klimchuk.gdgapp.utils.DateUtils;
+import com.alexey_klimchuk.gdgapp.utils.StringArrayBoxing;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.BaseSchedulerProvider;
+import com.squareup.sqlbrite.BriteDatabase;
+import com.squareup.sqlbrite.SqlBrite;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import rx.Observable;
+import rx.functions.Func1;
+
 import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContract.NoteEntry;
+import static com.alexey_klimchuk.gdgapp.utils.StringArrayBoxing.convertArrayToString;
 
 
 /**
@@ -42,50 +49,64 @@ import static com.alexey_klimchuk.gdgapp.data.source.local.NotesPersistenceContr
 public class NotesLocalDataSource implements NotesDataSource {
 
     private static NotesLocalDataSource INSTANCE;
-    private static String strSeparator = "__,__";
-    private NotesDbHelper mDbHelper;
 
-    // Prevent direct instantiation.
-    private NotesLocalDataSource(@NonNull Context context) {
-        mDbHelper = new NotesDbHelper(context);
+    private final BriteDatabase mDatabaseHelper;
+
+    private Func1<Cursor, Note> mTaskMapperFunction;
+
+    private NotesLocalDataSource(@NonNull Context context, @NonNull BaseSchedulerProvider schedulerProvider) {
+        NotesDbHelper mDbHelper = new NotesDbHelper(context);
+        SqlBrite sqlBrite = SqlBrite.create();
+        mDatabaseHelper = sqlBrite.wrapDatabaseHelper(mDbHelper, schedulerProvider.io());
+        mTaskMapperFunction = this::getNote;
     }
 
-    public static NotesLocalDataSource getInstance(@NonNull Context context) {
+    public static NotesLocalDataSource getInstance(@NonNull Context context, @NonNull BaseSchedulerProvider schedulerProvider) {
         if (INSTANCE == null) {
-            INSTANCE = new NotesLocalDataSource(context);
+            INSTANCE = new NotesLocalDataSource(context, schedulerProvider);
         }
         return INSTANCE;
     }
 
-    private static String convertArrayToString(ArrayList<String> array) {
-        if (array == null) {
-            return "";
-        }
-        String str = "";
-        for (int i = 0; i < array.size(); i++) {
-            str = str + array.get(i);
-            // Do not append comma a the end of last element
-            if (i < array.size() - 1) {
-                str = str + strSeparator;
-            }
-        }
-        return str;
-    }
-
-    private static ArrayList<String> convertStringToArray(String str) {
-        String[] arr = str.split(strSeparator);
-        return new ArrayList<String>(Arrays.asList(arr));
-    }
-
-    /**
-     * Note: {@link LoadNotesCallback#onDataNotAvailable()} is fired if the database doesn't exist
-     * or the table is empty.
-     */
     @Override
-    public void getNotes(@NonNull LoadNotesCallback callback) {
-        List<Note> notes = new ArrayList<Note>();
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        db.beginTransaction();
+    public Observable<List<Note>> getNotes() {
+        String[] projection = {
+                NoteEntry.IMAGE_LOCAL_COLUMN,
+                NoteEntry.COLUMN_NAME_ENTRY_ID,
+                NoteEntry.NAME_COLUMN,
+                NoteEntry.CONTENT_COLUMN,
+                NoteEntry.IMAGE_COLUMN,
+                NoteEntry.DATE_COLUMN,
+                NoteEntry.MOOD_COLUMN
+        };
+
+        String sql = String.format("SELECT %s FROM %s", TextUtils.join(",", projection), NoteEntry.TABLE_NAME);
+        return mDatabaseHelper.createQuery(NoteEntry.TABLE_NAME, sql)
+                .mapToList(mTaskMapperFunction);
+    }
+
+    private Note getNote(Cursor c) {
+        String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
+        String name = c.getString(c.getColumnIndexOrThrow(NoteEntry.NAME_COLUMN));
+        String content =
+                c.getString(c.getColumnIndexOrThrow(NoteEntry.CONTENT_COLUMN));
+        String image =
+                c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_COLUMN));
+        String imageLocal =
+                c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_LOCAL_COLUMN));
+        String date =
+                c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
+        Note.Mood mood =
+                Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
+
+        Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), StringArrayBoxing.convertStringToArray(image), mood);
+
+        note.setLocalImage(StringArrayBoxing.convertStringToArray(imageLocal));
+        return note;
+    }
+
+    @Override
+    public Observable<Note> getNote(@NonNull String noteId) {
 
         String[] projection = {
                 NoteEntry.IMAGE_LOCAL_COLUMN,
@@ -97,103 +118,14 @@ public class NotesLocalDataSource implements NotesDataSource {
                 NoteEntry.MOOD_COLUMN
         };
 
-        Cursor c = db.query(
-                NoteEntry.TABLE_NAME, projection, null, null, null, null, null);
-
-        if (c != null && c.getCount() > 0) {
-            while (c.moveToNext()) {
-                String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
-                String name = c.getString(c.getColumnIndexOrThrow(NoteEntry.NAME_COLUMN));
-                String content =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.CONTENT_COLUMN));
-                String image =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_COLUMN));
-                String imageLocal =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_LOCAL_COLUMN));
-                String date =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
-                Note.Mood mood =
-                        Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), convertStringToArray(image), mood);
-                note.setLocalImage(convertStringToArray(imageLocal));
-                notes.add(note);
-            }
-        }
-
-        if (c != null) {
-            c.close();
-        }
-
-        db.endTransaction();
-        db.close();
-
-        if (notes.isEmpty()) {
-            callback.onDataNotAvailable();
-        } else {
-            callback.onNotesLoaded(notes);
-        }
-    }
-
-    /**
-     * Note: {@link GetNoteCallback#onDataNotAvailable()} is fired if the {@link Note} isn't
-     * found.
-     */
-    @Override
-    public void getNote(@NonNull String NoteId, @NonNull GetNoteCallback callback) {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        String[] projection = {
-                NoteEntry.IMAGE_LOCAL_COLUMN,
-                NoteEntry.COLUMN_NAME_ENTRY_ID,
-                NoteEntry.NAME_COLUMN,
-                NoteEntry.CONTENT_COLUMN,
-                NoteEntry.IMAGE_COLUMN,
-                NoteEntry.DATE_COLUMN,
-                NoteEntry.MOOD_COLUMN
-        };
-
-        String selection = NoteEntry.COLUMN_NAME_ENTRY_ID + " LIKE ?";
-        String[] selectionArgs = {NoteId};
-
-        Cursor c = db.query(
-                NoteEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
-
-        Note note = null;
-
-        if (c != null && c.getCount() > 0) {
-            c.moveToFirst();
-            String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
-            String name = c.getString(c.getColumnIndexOrThrow(NoteEntry.NAME_COLUMN));
-            String content =
-                    c.getString(c.getColumnIndexOrThrow(NoteEntry.CONTENT_COLUMN));
-            String image =
-                    c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_COLUMN));
-            String localImage =
-                    c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_LOCAL_COLUMN));
-            String date =
-                    c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
-            Note.Mood mood =
-                    Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-            note = new Note(itemId, name, content, new Date(Long.valueOf(date)),
-                    convertStringToArray(image), convertStringToArray(localImage), mood);
-        }
-        if (c != null) {
-            c.close();
-        }
-
-        db.close();
-
-        if (note != null) {
-            callback.onNoteLoaded(note);
-        } else {
-            callback.onDataNotAvailable();
-        }
+        String sql = String.format("SELECT %s FROM %s WHERE %s LIKE ?",
+                TextUtils.join(",", projection), NoteEntry.TABLE_NAME, NoteEntry.COLUMN_NAME_ENTRY_ID);
+        return mDatabaseHelper.createQuery(NoteEntry.TABLE_NAME, sql, noteId)
+                .mapToOneOrDefault(mTaskMapperFunction, null);
     }
 
     @Override
-    public void editNote(@NonNull Note note, ArrayList<Bitmap> images, SaveNoteCallback callback) {
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
+    public void editNote(@NonNull Note note, ArrayList<Bitmap> images) {
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
         values.put(NoteEntry.NAME_COLUMN, note.getName());
@@ -206,20 +138,13 @@ public class NotesLocalDataSource implements NotesDataSource {
         //to use new image in RecyclerView
         CacheUtils.removeBitmapFromMemCache(note.getId());
 
-        db.update(NoteEntry.TABLE_NAME, values, NoteEntry.COLUMN_NAME_ENTRY_ID + " = ?",
-                new String[]{note.getId()});
-
-        db.close();
-
-        if (callback != null) {
-            callback.onNoteSaved();
-        }
+        String selection = NoteEntry.COLUMN_NAME_ENTRY_ID + " LIKE ?";
+        String[] selectionArgs = {note.getId()};
+        mDatabaseHelper.update(NoteEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 
     @Override
-    public void saveNote(@NonNull Note note, ArrayList<Bitmap> bitmap, SaveNoteCallback callback) {
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
+    public void saveNote(@NonNull Note note) {
         ContentValues values = new ContentValues();
         values.put(NoteEntry.COLUMN_NAME_ENTRY_ID, note.getId());
         values.put(NoteEntry.NAME_COLUMN, note.getName());
@@ -230,53 +155,23 @@ public class NotesLocalDataSource implements NotesDataSource {
 
         values.put(NoteEntry.IMAGE_LOCAL_COLUMN, convertArrayToString(note.getLocalImage()));
 
-        db.insert(NoteEntry.TABLE_NAME, null, values);
-
-        db.close();
-
-        if (callback != null)
-            callback.onNoteSaved();
+        mDatabaseHelper.insert(NoteEntry.TABLE_NAME, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     @Override
-    public void saveNotes(int currentIndex, ArrayList<Note> notes, ArrayList<Bitmap> bitmaps, SaveNoteCallback callback) {
-
+    public void deleteAllNotes() {
+        mDatabaseHelper.delete(NoteEntry.TABLE_NAME, null);
     }
 
     @Override
-    public void refreshNotes() {
-        // Not required because the {@link NotesRepository} handles the logic of refreshing the
-        // Notes from all the available data sources.
-    }
-
-    @Override
-    public void deleteAllNotes(DeleteNoteCallback callback) {
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-        db.delete(NoteEntry.TABLE_NAME, null, null);
-
-        db.close();
-    }
-
-    @Override
-    public void deleteNote(@NonNull String NoteId, DeleteNoteCallback callback) {
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
+    public void deleteNote(@NonNull String noteId) {
         String selection = NoteEntry.COLUMN_NAME_ENTRY_ID + " LIKE ?";
-        String[] selectionArgs = {NoteId};
-
-        db.delete(NoteEntry.TABLE_NAME, selection, selectionArgs);
-
-        db.close();
-        callback.onNoteDeleted();
+        String[] selectionArgs = {noteId};
+        mDatabaseHelper.delete(NoteEntry.TABLE_NAME, selection, selectionArgs);
     }
 
-    @Override
-    public void getNotesByDate(Date searchDate, LoadNotesCallback callback) {
-        List<Note> notes = new ArrayList<Note>();
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        db.beginTransaction();
-
+    /*@Override
+    public Observable<List<Note>> getNotesByDate(Date searchDate) {
         String[] projection = {
                 NoteEntry.IMAGE_LOCAL_COLUMN,
                 NoteEntry.COLUMN_NAME_ENTRY_ID,
@@ -287,44 +182,11 @@ public class NotesLocalDataSource implements NotesDataSource {
                 NoteEntry.MOOD_COLUMN
         };
 
-        String selection = NoteEntry.DATE_COLUMN + " > ? AND " + NoteEntry.DATE_COLUMN + " < ?";
-        String[] selectionArgs = {DateUtils.getStartDayDate(searchDate), DateUtils.getEndDayDate(searchDate)};
+        String selection = NoteEntry.DATE_COLUMN + " > " + DateUtils.getStartDayDate(searchDate) +
+                " AND " + NoteEntry.DATE_COLUMN + " < " + DateUtils.getEndDayDate(searchDate);
 
-        Cursor c = db.query(
-                NoteEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
-
-        Date d = new Date(Long.valueOf(selectionArgs[1]));
-        if (c != null && c.getCount() > 0) {
-            while (c.moveToNext()) {
-                String itemId = c.getString(c.getColumnIndexOrThrow(NoteEntry.COLUMN_NAME_ENTRY_ID));
-                String name = c.getString(c.getColumnIndexOrThrow(NoteEntry.NAME_COLUMN));
-                String content =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.CONTENT_COLUMN));
-                String image =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_COLUMN));
-                String imageLocal =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.IMAGE_LOCAL_COLUMN));
-                String date =
-                        c.getString(c.getColumnIndexOrThrow(NoteEntry.DATE_COLUMN));
-                Note.Mood mood =
-                        Note.Mood.values()[c.getInt((c.getColumnIndex(NoteEntry.MOOD_COLUMN)))];
-                Note note = new Note(itemId, name, content, new Date(Long.valueOf(date)), convertStringToArray(image), mood);
-                note.setLocalImage(convertStringToArray(imageLocal));
-                notes.add(note);
-            }
-        }
-
-        if (c != null) {
-            c.close();
-        }
-
-        db.endTransaction();
-        db.close();
-
-        if (notes.isEmpty()) {
-            callback.onDataNotAvailable();
-        } else {
-            callback.onNotesLoaded(notes);
-        }
-    }
+        String sql = String.format("SELECT %s FROM %s WHERE %s", TextUtils.join(",", projection), NoteEntry.TABLE_NAME, selection);
+        return mDatabaseHelper.createQuery(NoteEntry.TABLE_NAME, sql)
+                .mapToList(mTaskMapperFunction);
+    }*/
 }

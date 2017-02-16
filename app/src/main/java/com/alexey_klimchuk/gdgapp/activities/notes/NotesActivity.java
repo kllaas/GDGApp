@@ -4,9 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +18,7 @@ import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.create_note.CreateNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.SchedulerProvider;
 
 import java.util.Date;
 import java.util.List;
@@ -28,20 +26,19 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NotesActivity extends BaseActivity implements NotesRelations.View, SearchDialogFragment.SearchDialogListener,
-        NavigationView.OnNavigationItemSelectedListener {
+public class NotesActivity extends BaseActivity implements NotesRelations.View, SearchDialogFragment.SearchDialogListener {
 
     private static Bundle mBundleRecyclerViewState;
     private final String KEY_RECYCLER_STATE = "recycler_state";
 
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
+
     @BindView(R.id.no_data_container)
     RelativeLayout mNoDataView;
 
     private NotesRelations.Presenter mPresenter;
 
-    private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
@@ -55,37 +52,23 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
         toolbar.setTitle(getResources().getString(R.string.app_name));
         setSupportActionBar(toolbar);
 
-       /* DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);*/
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(NotesActivity.this, CreateNoteActivity.class);
-                startActivity(intent);
+        fab.setOnClickListener(view -> {
+            Intent intent = new Intent(NotesActivity.this, CreateNoteActivity.class);
+            startActivity(intent);
 
-                CacheUtils.tempBitmaps.clear();
-            }
+            CacheUtils.tempBitmaps.clear();
         });
 
-        // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mPresenter = new NotesPresenter(this);
+        mPresenter = new NotesPresenter(this, SchedulerProvider.getInstance());
         mPresenter.loadNotes();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -102,13 +85,12 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
             return true;
         }
 
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void refreshData(List<Note> notes) {
-        mAdapter = mPresenter.loadAdapter(notes);
+        RecyclerView.Adapter mAdapter = mPresenter.loadAdapter(notes);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -121,32 +103,6 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
     public void showEmptyListMessage(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         mNoDataView.setVisibility(visibility);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_noters) {
-
-        } else if (id == R.id.nav_settings) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     @Override

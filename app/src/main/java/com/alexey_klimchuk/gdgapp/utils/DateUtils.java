@@ -32,23 +32,23 @@ public class DateUtils {
         }
     }
 
-    public static String getStartDayDate(Date searchDate) {
+    public static long getStartDayDate(Date searchDate) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(searchDate); // compute start of the day for the timestamp
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
-        return String.valueOf(cal.getTime().getTime());
+        return cal.getTime().getTime();
     }
 
-    public static String getEndDayDate(Date searchDate) {
+    public static long getEndDayDate(Date searchDate) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(searchDate); // compute start of the day for the timestamp
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 59);
         cal.set(Calendar.MILLISECOND, 0);
-        return String.valueOf(cal.getTime().getTime());
+        return cal.getTime().getTime();
     }
 }

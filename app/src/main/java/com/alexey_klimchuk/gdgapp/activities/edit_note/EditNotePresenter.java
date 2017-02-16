@@ -13,6 +13,7 @@ import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.BaseSchedulerProvider;
 
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ public class EditNotePresenter implements EditNoteRelations.Presenter {
     private Note mNote;
     private PreviewEditImageAdapter mPreviewAdapter;
 
-    public EditNotePresenter(EditNoteActivity activity) {
+    public EditNotePresenter(EditNoteActivity activity, BaseSchedulerProvider schedulerProvider) {
         mView = activity;
         CacheUtils.tempBitmaps.clear();
         mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
