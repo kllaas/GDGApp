@@ -10,15 +10,9 @@ public interface RegistrationRelations {
 
     interface View {
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
-
-        void showMessage(int message);
-
-        void showMessage(String message);
-
         Activity getActivity();
+
+        void setLoadingIndicator(boolean active);
     }
 
     interface Presenter {

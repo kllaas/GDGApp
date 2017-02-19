@@ -21,6 +21,8 @@ import com.alexey_klimchuk.gdgapp.adapters.CustomSpinnerAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
+import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.SchedulerProvider;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -34,17 +36,24 @@ import butterknife.OnClick;
 public class CreateNoteActivity extends BaseActivity implements CreateNoteRelations.View {
 
     private static final int PICK_IMAGE_REQUEST = 1;
+
     @BindView(R.id.spinner)
     public Spinner spinner;
+
     @BindView(R.id.edit_text_name_create)
     public EditText noteName;
+
     @BindView(R.id.edit_text_content)
     public EditText noteContent;
+
     @BindView(R.id.image_view_create)
     public ImageView noteImage;
+
     @BindView(R.id.preview_recview)
     public RecyclerView mRecyclerView;
+
     private String[] spinnerValues = new String[]{"Good", "Norm", "Bad"};
+
     private CreateNotePresenter presenter;
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +66,7 @@ public class CreateNoteActivity extends BaseActivity implements CreateNoteRelati
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
 
-        presenter = new CreateNotePresenter(this);
+        presenter = new CreateNotePresenter(this, SchedulerProvider.getInstance());
 
         initializeVariables();
 
@@ -98,7 +107,7 @@ public class CreateNoteActivity extends BaseActivity implements CreateNoteRelati
 
             startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
         } else {
-            showMessage(getString(R.string.cant_add_more_images_message));
+            ToastUtils.showMessage(R.string.cant_add_more_images_message, this);
         }
     }
 
@@ -160,16 +169,6 @@ public class CreateNoteActivity extends BaseActivity implements CreateNoteRelati
         if (item.equals(spinnerValues[1])) {
             return Note.Mood.NORMAL;
         } else return Note.Mood.BAD;
-    }
-
-    @Override
-    public void showMessage(int message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void showMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

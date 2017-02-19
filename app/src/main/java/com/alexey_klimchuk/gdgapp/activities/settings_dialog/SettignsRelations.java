@@ -10,9 +10,7 @@ public interface SettignsRelations {
 
     interface View {
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
+        void setLoadingIndicator(boolean active);
 
         Activity getActivity();
 

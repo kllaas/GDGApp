@@ -16,8 +16,10 @@ import com.alexey_klimchuk.gdgapp.R;
  * Adapter for mood states
  */
 public class CustomSpinnerAdapter extends ArrayAdapter {
-    String[] spinnerValues;
-    Context mContext;
+
+    private String[] spinnerValues;
+
+    private Context mContext;
 
     public CustomSpinnerAdapter(Context ctx, int txtViewResourceId,
                                 String[] spinnerValues) {
@@ -28,15 +30,15 @@ public class CustomSpinnerAdapter extends ArrayAdapter {
 
     @Override
     public View getDropDownView(int position, View cnvtView, ViewGroup prnt) {
-        return getCustomView(position, cnvtView, prnt);
+        return getCustomView(position, prnt);
     }
 
     @Override
     public View getView(int pos, View cnvtView, ViewGroup prnt) {
-        return getCustomView(pos, cnvtView, prnt);
+        return getCustomView(pos, prnt);
     }
 
-    public View getCustomView(int position, View convertView, ViewGroup parent) {
+    public View getCustomView(int position, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 

@@ -1,18 +1,8 @@
 package com.alexey_klimchuk.gdgapp.activities.settings_dialog;
 
-import android.graphics.Bitmap;
-import android.util.Log;
-
-import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
-import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
-import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
-import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
-import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by alexey on 02/02/17.
@@ -21,19 +11,19 @@ import java.util.List;
 public class SettingsPresenter implements SettignsRelations.Presenter {
 
     private static final String TAG = "SettingsPres";
-    private final NotesRepository mNotesRepository;
+    //    private final NotesRepository mNotesRepository;
     private SettignsRelations.View mView;
 
     public SettingsPresenter(SettignsRelations.View mView) {
         this.mView = mView;
-
+/*
         mNotesRepository = NotesRepository.getInstance(NotesRemoteDataSource.getInstance(),
-                NotesLocalDataSource.getInstance(mView.getActivity()));
+                NotesLocalDataSource.getInstance(mView.getActivity()));*/
     }
 
     @Override
     public void loadToServer() {
-        mView.showProgressDialog();
+       /* mView.showProgressDialog();
 
         mNotesRepository.getNotes(new NotesDataSource.LoadNotesCallback() {
             @Override
@@ -62,7 +52,7 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
             public void onDataNotAvailable() {
                 handleDataNotAvailable();
             }
-        });
+        });*/
     }
 
     private ArrayList<Note> removeRemoteReferences(ArrayList<Note> notes) {
@@ -75,7 +65,7 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
 
     @Override
     public void loadFromServer() {
-        mView.showProgressDialog();
+        /*mView.showProgressDialog();
 
         mNotesRepository.getNotesFromRemoteDataSource(new NotesDataSource.LoadNotesCallback() {
             @Override
@@ -108,11 +98,11 @@ public class SettingsPresenter implements SettignsRelations.Presenter {
             public void onDataNotAvailable() {
                 handleDataNotAvailable();
             }
-        });
+        });*/
     }
 
-    private void handleDataNotAvailable() {
+    private void handleDataNotAvailable() {/*
         ToastUtils.showMessage(R.string.message_loading_failed, mView.getActivity());
-        mView.hideProgressDialog();
+        mView.hideProgressDialog();*/
     }
 }

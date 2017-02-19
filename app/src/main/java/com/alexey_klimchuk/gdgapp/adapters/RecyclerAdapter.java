@@ -17,7 +17,6 @@ import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.detail_note.DetailNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
 import com.alexey_klimchuk.gdgapp.utils.ImageResizer;
@@ -33,14 +32,14 @@ import java.util.List;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder> {
 
     private static final String TAG = "mRecyclerAdapter";
-    private List<Note> mNotes;
-    private Context mContext;
-    private NotesRepository mRepository;
 
-    public RecyclerAdapter(List<Note> notes, Context context, NotesRepository repository) {
+    private List<Note> mNotes;
+
+    private Context mContext;
+
+    public RecyclerAdapter(List<Note> notes, Context context) {
         mNotes = notes;
         mContext = context;
-        mRepository = repository;
     }
 
     /**
@@ -63,13 +62,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public void onBindViewHolder(final ViewHolder holder, int p) {
         int position = holder.getAdapterPosition();
 
-        holder.mRootView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {// start Details activity after clicking on card with content of selected note
-                Intent intent = new Intent(mContext, DetailNoteActivity.class);
-                intent.putExtra(Constants.EXTRA_NOTE_ID, mNotes.get(holder.getAdapterPosition()).getId());
-                mContext.startActivity(intent);
-            }
+        holder.mRootView.setOnClickListener(v -> {// start Details activity after clicking on card with content of selected note
+            Intent intent = new Intent(mContext, DetailNoteActivity.class);
+            intent.putExtra(Constants.EXTRA_NOTE_ID, mNotes.get(holder.getAdapterPosition()).getId());
+            mContext.startActivity(intent);
         });
 
         // Set up mood state
@@ -139,14 +135,11 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         return mNotes.size();
     }
 
-    // Provide a reference to the views for each data item
-// Complex data items may need more than one view per item, and
-// you provide access to all the views for a data item in a view holder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public View mRootView;
+        View mRootView;
 
-        public ViewHolder(View v) {
+        ViewHolder(View v) {
             super(v);
             mRootView = v;
         }

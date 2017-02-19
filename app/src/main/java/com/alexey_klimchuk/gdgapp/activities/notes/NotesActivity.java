@@ -39,8 +39,6 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
 
     private NotesRelations.Presenter mPresenter;
 
-    private RecyclerView.LayoutManager mLayoutManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +58,7 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
             CacheUtils.tempBitmaps.clear();
         });
 
-        mLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         mPresenter = new NotesPresenter(this, SchedulerProvider.getInstance());

@@ -6,7 +6,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.alexey_klimchuk.gdgapp.Constants;
@@ -49,12 +48,7 @@ public class DetailNoteActivity extends AppCompatActivity {
         showNoteContentFragment();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startNotesActivity();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> startNotesActivity());
     }
 
     public void showNoteContentFragment() {

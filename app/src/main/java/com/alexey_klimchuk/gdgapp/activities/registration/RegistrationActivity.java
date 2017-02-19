@@ -1,15 +1,14 @@
 package com.alexey_klimchuk.gdgapp.activities.registration;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
+import com.alexey_klimchuk.gdgapp.BaseActivity;
 import com.alexey_klimchuk.gdgapp.R;
+import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,17 +17,19 @@ import butterknife.OnClick;
 /**
  * RegistrationActivity activity.
  */
-public class RegistrationActivity extends AppCompatActivity implements RegistrationRelations.View {
+public class RegistrationActivity extends BaseActivity implements RegistrationRelations.View {
 
     @BindView(R.id.edit_text_name_registration)
     EditText name;
+
     @BindView(R.id.edit_text_password_registration)
     EditText password;
+
     @BindView(R.id.edit_text_password_confirm)
     EditText passwordConfirm;
 
     private RegistrationRelations.Presenter mPresenter;
-    private ProgressDialog mProgressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,32 +48,8 @@ public class RegistrationActivity extends AppCompatActivity implements Registrat
         if (password.getText().toString().equals(passwordConfirm.getText().toString())) {
             mPresenter.registerUser(name.getText().toString(), password.getText().toString());
         } else {
-            showMessage(R.string.message_pass_not_conf);
+            ToastUtils.showMessage(R.string.message_pass_not_conf, getActivity());
         }
-    }
-
-    @Override
-    public void showProgressDialog() {
-        mProgressDialog = new ProgressDialog(this);
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setMessage(getString(R.string.message_loading));
-        mProgressDialog.show();
-    }
-
-    @Override
-    public void hideProgressDialog() {
-        mProgressDialog.cancel();
-    }
-
-    @Override
-    public void showMessage(int message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void showMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

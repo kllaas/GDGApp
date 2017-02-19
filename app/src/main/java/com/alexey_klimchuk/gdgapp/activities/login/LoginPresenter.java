@@ -11,7 +11,7 @@ import android.util.Log;
 import com.alexey_klimchuk.gdgapp.Constants;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.notes.NotesActivity;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -34,21 +34,18 @@ public class LoginPresenter implements LoginRelations.Presenter {
 
         mAuth = FirebaseAuth.getInstance();
 
-        FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
-                    mView.getActivity().startActivity(intent);
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                }
-
+        FirebaseAuth.AuthStateListener mAuthListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                // User is signed in
+                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
+                mView.getActivity().startActivity(intent);
+            } else {
+                // User is signed out
+                Log.d(TAG, "onAuthStateChanged:signed_out");
             }
+
         };
 
         mAuth.addAuthStateListener(mAuthListener);
@@ -79,24 +76,21 @@ public class LoginPresenter implements LoginRelations.Presenter {
             return;
         }
 
-        mView.showProgressDialog();
+        mView.setLoadingIndicator(true);
 
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mView.getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        handleCompleteLogging(task);
-                    }
+                .addOnCompleteListener(mView.getActivity(), task -> {
+                    handleCompleteLogging(task);
                 });
     }
 
     private void handleCompleteLogging(@NonNull Task<AuthResult> task) {
         if (!task.isSuccessful()) {
             Log.w(TAG, "signInWithEmail:failed", task.getException());
-            mView.showMessage(R.string.auth_failed);
+            ToastUtils.showMessage(R.string.auth_failed, mView.getActivity());
         }
 
-        mView.hideProgressDialog();
+        mView.setLoadingIndicator(false);
     }
 
     private boolean isValid(String email, String password) {
@@ -104,7 +98,7 @@ public class LoginPresenter implements LoginRelations.Presenter {
             return true;
         }
 
-        mView.showMessage(R.string.fields_not_walid);
+        ToastUtils.showMessage(R.string.fields_not_walid, mView.getActivity());
         return false;
     }
 }

@@ -16,13 +16,7 @@ public class EditNoteRelations {
 
     interface View {
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
-
-        void showMessage(int message);
-
-        void showMessage(String message);
+        void setLoadingIndicator(boolean active);
 
         void updateViews(Note note);
 

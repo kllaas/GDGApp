@@ -10,11 +10,7 @@ public interface LoginRelations {
 
     interface View {
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
-
-        void showMessage(int message);
+        void setLoadingIndicator(boolean active);
 
         Activity getActivity();
 

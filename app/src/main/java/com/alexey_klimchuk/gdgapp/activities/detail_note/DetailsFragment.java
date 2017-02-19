@@ -29,6 +29,7 @@ import com.alexey_klimchuk.gdgapp.activities.edit_note.EditNoteActivity;
 import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.DateUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.SchedulerProvider;
 
 import java.io.File;
 import java.util.Date;
@@ -88,7 +89,7 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
         setHasOptionsMenu(true);
 
         noteId = getArguments().getString(Constants.EXTRA_NOTE_ID);
-        mPresenter = new DetailNotePresenter(this);
+        mPresenter = new DetailNotePresenter(this, SchedulerProvider.getInstance());
         mPresenter.loadNote(noteId);
 
         initVars();
@@ -149,20 +150,6 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
     }
 
     @Override
-    public void showProgressDialog() {
-        mProgressDialog = new ProgressDialog(getContext());
-        mProgressDialog.setCancelable(false);
-        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        mProgressDialog.setMessage(getString(R.string.message_loading));
-        mProgressDialog.show();
-    }
-
-    @Override
-    public void hideProgressDialog() {
-        mProgressDialog.cancel();
-    }
-
-    @Override
     public void updateViews(Note note) {
         setText(note);
 
@@ -172,7 +159,6 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
 
         setPreviews(note);
     }
-
 
     private void setPreviews(Note note) {
         mRecyclerView.setAdapter(mPresenter.getPreviewAdapter(note.getLocalImage()));
@@ -216,5 +202,18 @@ public class DetailsFragment extends Fragment implements DetailNoteRelations.Vie
         noteName.setText(note.getName());
         noteContent.setText(note.getContent());
         noteDate.setText(DateUtils.convertDateToString(new Date(note.getDate())));
+    }
+
+    @Override
+    public void setLoadingIndicator(boolean active) {
+        if (active) {
+            mProgressDialog = new ProgressDialog(getContext());
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            mProgressDialog.setMessage(getString(R.string.message_loading));
+            mProgressDialog.show();
+        } else {
+            mProgressDialog.cancel();
+        }
     }
 }

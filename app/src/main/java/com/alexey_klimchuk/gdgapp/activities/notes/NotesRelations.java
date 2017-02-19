@@ -18,9 +18,7 @@ public class NotesRelations {
 
         void refreshData(List<Note> Notes);
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
+        void setLoadingIndicator(boolean active);
 
         AppCompatActivity getActivity();
 

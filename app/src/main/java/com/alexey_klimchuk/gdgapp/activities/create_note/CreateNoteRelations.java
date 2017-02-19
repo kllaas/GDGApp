@@ -14,13 +14,7 @@ public class CreateNoteRelations {
 
     interface View {
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
-
-        void showMessage(int message);
-
-        void showMessage(String message);
+        void setLoadingIndicator(boolean active);
 
         Activity getActivity();
     }

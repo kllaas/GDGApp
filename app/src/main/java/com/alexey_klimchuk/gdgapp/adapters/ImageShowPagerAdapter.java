@@ -14,6 +14,9 @@ import com.alexvasilkov.gestures.views.GestureImageView;
 import java.io.File;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 
 /**
  * Created by Alexey on 13.11.2016.
@@ -22,15 +25,12 @@ import java.util.ArrayList;
 public class ImageShowPagerAdapter extends RecyclePagerAdapter<ImageShowPagerAdapter.MyViewHolder> {
 
     private final ViewPager viewPager;
+
     private ArrayList<String> photos;
 
     public ImageShowPagerAdapter(ViewPager viewPager, ArrayList<String> photos) {
         this.viewPager = viewPager;
         this.photos = photos;
-    }
-
-    public static GestureImageView getImage(RecyclePagerAdapter.ViewHolder holder) {
-        return ((MyViewHolder) holder).image;
     }
 
     @Override
@@ -60,14 +60,16 @@ public class ImageShowPagerAdapter extends RecyclePagerAdapter<ImageShowPagerAda
         holder.image.getController().getSettings().enableGestures();
     }
 
-    public class MyViewHolder extends RecyclePagerAdapter.ViewHolder {
-        public View mRootView;
+    class MyViewHolder extends RecyclePagerAdapter.ViewHolder {
+
+        View mRootView;
+        @BindView(R.id.image_view)
         GestureImageView image;
 
-        public MyViewHolder(View v) {
+        MyViewHolder(View v) {
             super(v);
             mRootView = v;
-            image = (GestureImageView) v.findViewById(R.id.image_view);
+            ButterKnife.bind(this, v);
         }
     }
 

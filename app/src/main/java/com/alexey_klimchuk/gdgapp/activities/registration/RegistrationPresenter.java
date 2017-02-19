@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.login.LoginActivity;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -19,25 +19,21 @@ import com.google.firebase.auth.FirebaseUser;
 public class RegistrationPresenter implements RegistrationRelations.Presenter {
 
     private static final String TAG = "mLoginPresenter";
+
     private final RegistrationRelations.View mRegistrationView;
 
     private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
-
 
     public RegistrationPresenter(RegistrationRelations.View registrationView) {
         mRegistrationView = registrationView;
         mAuth = FirebaseAuth.getInstance();
 
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                } else {
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                }
+        FirebaseAuth.AuthStateListener mAuthListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+            } else {
+                Log.d(TAG, "onAuthStateChanged:signed_out");
             }
         };
 
@@ -50,22 +46,19 @@ public class RegistrationPresenter implements RegistrationRelations.Presenter {
             return;
         }
 
-        mRegistrationView.showProgressDialog();
+        mRegistrationView.setLoadingIndicator(true);
 
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mRegistrationView.getActivity(), new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        handleRegistrationResult(task);
-                    }
+                .addOnCompleteListener(mRegistrationView.getActivity(), task -> {
+                    handleRegistrationResult(task);
                 });
     }
 
     private void handleRegistrationResult(@NonNull Task<AuthResult> task) {
-        mRegistrationView.hideProgressDialog();
+        mRegistrationView.setLoadingIndicator(false);
 
         if (!task.isSuccessful()) {
-            mRegistrationView.showMessage(task.getException().getMessage());
+            ToastUtils.showMessage(task.getException().getMessage(), mRegistrationView.getActivity());
         } else {
             Intent intent = new Intent(mRegistrationView.getActivity(), LoginActivity.class);
             mRegistrationView.getActivity().startActivity(intent);
@@ -76,7 +69,7 @@ public class RegistrationPresenter implements RegistrationRelations.Presenter {
         if (email.length() > 0 && password.length() > 0) {
             return true;
         }
-        mRegistrationView.showMessage(R.string.fields_not_walid);
+        ToastUtils.showMessage(R.string.fields_not_walid, mRegistrationView.getActivity());
         return false;
     }
 }

@@ -66,15 +66,14 @@ public class SettingsDialogFragment extends DialogFragment implements SettignsRe
     }
 
     @Override
-    public void showProgressDialog() {
-        progressView.setVisibility(View.VISIBLE);
-        disableButtons();
-    }
-
-    @Override
-    public void hideProgressDialog() {
-        progressView.setVisibility(View.VISIBLE);
-        enableButtons();
+    public void setLoadingIndicator(boolean active) {
+        if (active) {
+            progressView.setVisibility(View.VISIBLE);
+            disableButtons();
+        } else {
+            progressView.setVisibility(View.GONE);
+            enableButtons();
+        }
     }
 
     @Override

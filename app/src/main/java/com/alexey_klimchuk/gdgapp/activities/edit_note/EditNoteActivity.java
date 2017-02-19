@@ -24,6 +24,7 @@ import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.utils.BitmapUtils;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 import com.alexey_klimchuk.gdgapp.utils.ToastUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.SchedulerProvider;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -80,7 +81,7 @@ public class EditNoteActivity extends BaseActivity implements EditNoteRelations.
 
         String noteId = getIntent().getStringExtra(Constants.ARGUMENT_EDIT_NOTE_ID);
 
-        presenter = new EditNotePresenter(this);
+        presenter = new EditNotePresenter(this, SchedulerProvider.getInstance());
         presenter.loadNote(noteId);
 
         initializeVariables();
@@ -131,7 +132,7 @@ public class EditNoteActivity extends BaseActivity implements EditNoteRelations.
 
             startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
         } else {
-            showMessage(getString(R.string.cant_add_more_images_message));
+            ToastUtils.showMessage(getString(R.string.cant_add_more_images_message), getActivity());
         }
     }
 
@@ -202,16 +203,6 @@ public class EditNoteActivity extends BaseActivity implements EditNoteRelations.
     }
 
     @Override
-    public void showMessage(int message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void showMessage(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
     public void updateViews(Note note) {
         setText(note);
 
@@ -247,28 +238,13 @@ public class EditNoteActivity extends BaseActivity implements EditNoteRelations.
     private void setMood(Note note) {
         switch (note.getMood()) {
             case GOOD:
-                spinner.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setSelection(0);
-                    }
-                });
+                spinner.post(() -> spinner.setSelection(0));
                 break;
             case NORMAL:
-                spinner.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setSelection(1);
-                    }
-                });
+                spinner.post(() -> spinner.setSelection(1));
                 break;
             case BAD:
-                spinner.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        spinner.setSelection(2);
-                    }
-                });
+                spinner.post(() -> spinner.setSelection(2));
                 break;
         }
     }

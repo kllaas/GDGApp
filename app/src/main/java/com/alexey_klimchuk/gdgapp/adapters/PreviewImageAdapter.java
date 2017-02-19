@@ -9,6 +9,9 @@ import android.widget.ImageView;
 import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by Alex on 22.03.2016.
  * Adapter for RecyclerView in NotesActivity.
@@ -41,13 +44,14 @@ public class PreviewImageAdapter extends RecyclerView.Adapter<PreviewImageAdapte
         return CacheUtils.tempBitmaps.getSmallImages().size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView imageView;
+        @BindView(R.id.image_view)
+        ImageView imageView;
 
-        public ViewHolder(View v) {
+        ViewHolder(View v) {
             super(v);
-            imageView = (ImageView) v.findViewById(R.id.image_view);
+            ButterKnife.bind(this, v);
         }
     }
 

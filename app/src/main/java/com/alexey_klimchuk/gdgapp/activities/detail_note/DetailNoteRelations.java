@@ -19,11 +19,9 @@ public class DetailNoteRelations {
 
         void showEditTask(@NonNull String taskId);
 
-        void showProgressDialog();
-
-        void hideProgressDialog();
-
         void updateViews(Note note);
+
+        void setLoadingIndicator(boolean active);
 
         Activity getActivity();
 

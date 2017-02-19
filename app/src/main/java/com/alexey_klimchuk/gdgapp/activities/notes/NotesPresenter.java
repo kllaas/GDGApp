@@ -27,8 +27,11 @@ import rx.subscriptions.CompositeSubscription;
 public class NotesPresenter implements NotesRelations.Presenter {
 
     private final BaseSchedulerProvider mSchedulerProvider;
+
     private NotesRelations.View mView;
+
     private NotesRepository mNotesRepository;
+
     private CompositeSubscription mSubscriptions;
 
     public NotesPresenter(NotesRelations.View view, BaseSchedulerProvider schedulerProvider) {
@@ -42,7 +45,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
 
     @Override
     public void loadNotes() {
-        mView.showProgressDialog();
+        mView.setLoadingIndicator(true);
 
         mSubscriptions.clear();
         Subscription subscription = mNotesRepository
@@ -62,7 +65,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
                         // onError
                         throwable -> mView.showEmptyListMessage(true),
                         // onCompleted
-                        () -> mView.hideProgressDialog());
+                        () -> mView.setLoadingIndicator(false));
         mSubscriptions.add(subscription);
     }
 
@@ -77,7 +80,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
 
     @Override
     public RecyclerView.Adapter loadAdapter(List<Note> notes) {
-        return new RecyclerAdapter(notes, mView.getActivity(), mNotesRepository);
+        return new RecyclerAdapter(notes, mView.getActivity());
     }
 
     @Override
@@ -102,7 +105,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
 
     @Override
     public void searchByDate(Date date) {
-        mView.showProgressDialog();
+        mView.setLoadingIndicator(true);
 
         mSubscriptions.clear();
         Subscription subscription = mNotesRepository
@@ -123,7 +126,7 @@ public class NotesPresenter implements NotesRelations.Presenter {
                         // onError
                         throwable -> mView.showEmptyListMessage(true),
                         // onCompleted
-                        () -> mView.hideProgressDialog());
+                        () -> mView.setLoadingIndicator(false));
         mSubscriptions.add(subscription);
     }
 

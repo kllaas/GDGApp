@@ -6,15 +6,14 @@ import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.inputmethod.InputMethodManager;
 
-import com.alexey_klimchuk.gdgapp.R;
 import com.alexey_klimchuk.gdgapp.activities.notes.NotesActivity;
 import com.alexey_klimchuk.gdgapp.adapters.PreviewEditImageAdapter;
 import com.alexey_klimchuk.gdgapp.data.Note;
-import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.NotesRepository;
 import com.alexey_klimchuk.gdgapp.data.source.local.NotesLocalDataSource;
 import com.alexey_klimchuk.gdgapp.data.source.remote.NotesRemoteDataSource;
 import com.alexey_klimchuk.gdgapp.utils.CacheUtils;
+import com.alexey_klimchuk.gdgapp.utils.schedulers.BaseSchedulerProvider;
 
 /**
  * Created by Alexey on 24.09.2016.
@@ -25,36 +24,28 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
     private CreateNoteRelations.View mView;
 
     private NotesRepository mNotesRepository;
+
     private PreviewEditImageAdapter mPreviewAdapter;
 
-    public CreateNotePresenter(CreateNoteActivity activity) {
+    public CreateNotePresenter(CreateNoteActivity activity, BaseSchedulerProvider provider) {
         mView = activity;
-        mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity),
+        mNotesRepository = NotesRepository.getInstance(NotesLocalDataSource.getInstance(activity, provider),
                 NotesRemoteDataSource.getInstance());
     }
 
     @Override
     public void saveNote(final Note note) {
-        mView.showProgressDialog();
+        mView.setLoadingIndicator(true);
 
         note.setRandomId();
 
-        mNotesRepository.saveNote(note, CacheUtils.tempBitmaps.getFullSizeImages(), new NotesDataSource.SaveNoteCallback() {
-            @Override
-            public void onNoteSaved() {
-                mView.hideProgressDialog();
+        mNotesRepository.saveNote(note, CacheUtils.tempBitmaps.getFullSizeImages());
 
-                Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
-                mView.getActivity().startActivity(intent);
-                hideKeyBoard();
-            }
+        mView.setLoadingIndicator(false);
 
-            @Override
-            public void onError() {
-                mView.hideProgressDialog();
-                mView.showMessage(R.string.message_loading_failed);
-            }
-        });
+        Intent intent = new Intent(mView.getActivity(), NotesActivity.class);
+        mView.getActivity().startActivity(intent);
+        hideKeyBoard();
     }
 
     private void hideKeyBoard() {
@@ -70,7 +61,7 @@ public class CreateNotePresenter implements CreateNoteRelations.Presenter {
 
     @Override
     public RecyclerView.Adapter getImagePreviewAdapter() {
-        mPreviewAdapter = new PreviewEditImageAdapter(mView.getActivity());
+        mPreviewAdapter = new PreviewEditImageAdapter();
         return mPreviewAdapter;
     }
 

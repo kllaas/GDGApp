@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.alexey_klimchuk.gdgapp.BaseActivity;
 import com.alexey_klimchuk.gdgapp.Constants;
@@ -64,11 +63,6 @@ public class LoginActivity extends BaseActivity implements LoginRelations.View {
     public void signUp(View v) {
         Intent intent = new Intent(this, RegistrationActivity.class);
         startActivity(intent);
-    }
-
-    @Override
-    public void showMessage(int message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

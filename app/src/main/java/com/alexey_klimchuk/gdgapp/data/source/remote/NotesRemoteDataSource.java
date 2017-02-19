@@ -23,7 +23,6 @@ import com.alexey_klimchuk.gdgapp.data.Note;
 import com.alexey_klimchuk.gdgapp.data.source.NotesDataSource;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import rx.Observable;
@@ -71,10 +70,6 @@ public class NotesRemoteDataSource implements NotesDataSource {
 
     }
 
-    @Override
-    public Observable<List<Note>> getNotesByDate(Date date) {
-        return null;
-    }
 /*
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private StorageReference storageRef = FirebaseStorage.getInstance()
