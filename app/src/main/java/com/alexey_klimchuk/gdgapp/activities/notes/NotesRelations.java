@@ -23,6 +23,8 @@ public class NotesRelations {
         AppCompatActivity getActivity();
 
         void showEmptyListMessage(boolean visible);
+
+        void requestPermissions();
     }
 
     interface Presenter {
@@ -36,6 +38,8 @@ public class NotesRelations {
         void crateSettingsDialog();
 
         void searchByDate(Date date);
+
+        void onPermissionsResult(boolean b);
     }
 
 }

@@ -69,13 +69,21 @@ public class NotesPresenter implements NotesRelations.Presenter {
         mSubscriptions.add(subscription);
     }
 
-    private void processNotes(List<Note> notes) {
-        if (notes.isEmpty()) {
-            mView.showEmptyListMessage(true);
-        } else {
-            mView.showEmptyListMessage(false);
-            mView.refreshData(notes);
+    @Override
+    public void onPermissionsResult(boolean granted) {
+        if (granted) {
+            loadNotes();
+            return;
         }
+
+        mView.showEmptyListMessage(true);
+    }
+
+    private void processNotes(List<Note> notes) {
+        mView.showEmptyListMessage(notes.isEmpty());
+
+        if (!notes.isEmpty())
+            mView.refreshData(notes);
     }
 
     @Override

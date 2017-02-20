@@ -1,9 +1,13 @@
 package com.alexey_klimchuk.gdgapp.activities.notes;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,7 +32,10 @@ import butterknife.ButterKnife;
 
 public class NotesActivity extends BaseActivity implements NotesRelations.View, SearchDialogFragment.SearchDialogListener {
 
+    private static final int REQUEST_CODE_ASK_PERMISSIONS = 47;
+
     private static Bundle mBundleRecyclerViewState;
+
     private final String KEY_RECYCLER_STATE = "recycler_state";
 
     @BindView(R.id.my_recycler_view)
@@ -62,7 +69,7 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         mPresenter = new NotesPresenter(this, SchedulerProvider.getInstance());
-        mPresenter.loadNotes();
+        requestPermissions();
     }
 
     @Override
@@ -101,6 +108,30 @@ public class NotesActivity extends BaseActivity implements NotesRelations.View, 
     public void showEmptyListMessage(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
         mNoDataView.setVisibility(visibility);
+    }
+
+    @Override
+    public void requestPermissions() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                mPresenter.onPermissionsResult(true);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+
+            return;
+        }
+
+        mPresenter.onPermissionsResult(true);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        mPresenter.onPermissionsResult(grantResults[0] == PackageManager.PERMISSION_GRANTED);
     }
 
     @Override
