@@ -103,7 +103,6 @@ public class NotesRepository {
         Observable<List<Note>> localTasks = getAndCacheLocalNotes();
 
         return localTasks
-                .filter(tasks -> !tasks.isEmpty())
                 .first();
     }
 
