@@ -79,9 +79,7 @@ public class LoginPresenter implements LoginRelations.Presenter {
         mView.setLoadingIndicator(true);
 
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(mView.getActivity(), task -> {
-                    handleCompleteLogging(task);
-                });
+                .addOnCompleteListener(mView.getActivity(), this::handleCompleteLogging);
     }
 
     private void handleCompleteLogging(@NonNull Task<AuthResult> task) {

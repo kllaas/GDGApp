@@ -52,4 +52,5 @@
     <string name="text_load_from_server_details">Or, if you have account already, just load notes from your account!</string>
     <string name="synchronizing">Synchronizing</string>
     <string name="message_notes_saved">Your notes was sucessfully saved</string>
+    <string name="notification_come_back">Don`t forget to write about the most important in your life</string>
 </resources>
